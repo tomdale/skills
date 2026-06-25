@@ -1,0 +1,25 @@
+{
+  "name": "tdx",
+  "version": "0.1.0",
+  "description": "Tom Dale's personal agent skills and utilities.",
+  "author": {
+    "name": "Tom Dale",
+    "url": "https://github.com/tomdale"
+  },
+  "license": "UNLICENSED",
+  "keywords": ["codex", "personal", "skills", "utilities", "workflow"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "tdx",
+    "shortDescription": "Personal agent skills and utilities",
+    "longDescription": "Personal-first agent skills and lightweight workflow helpers maintained by Tom Dale in public. Reuse is best-effort.",
+    "developerName": "tomdale",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "defaultPrompt": [
+      "Use one of Tom's local skills for this task",
+      "Find the right utility in the tdx plugin",
+      "Add a new personal agent skill for this workflow"
+    ]
+  }
+}

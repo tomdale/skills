@@ -1,0 +1,20 @@
+{
+  "name": "tomdale-skills",
+  "interface": {
+    "displayName": "Tom Dale Skills"
+  },
+  "plugins": [
+    {
+      "name": "tdx",
+      "source": {
+        "source": "local",
+        "path": "."
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

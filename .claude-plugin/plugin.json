@@ -1,0 +1,14 @@
+{
+  "name": "tdx",
+  "version": "0.1.0",
+  "description": "Tom Dale's personal agent skills and lightweight workflow helpers.",
+  "author": {
+    "name": "Tom Dale"
+  },
+  "keywords": [
+    "personal",
+    "skills",
+    "agents",
+    "codex"
+  ]
+}
