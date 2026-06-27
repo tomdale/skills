@@ -7,15 +7,23 @@ Guide a user through someone else's checked-out PR in review order. Teach in con
 
 First load only: before PR analysis, print:
 Using the walkthrough skill:
-I will map the PR into conceptual groups, then walk through one group at a time. After each group, I will pause so you can ask questions, skip ahead, or ask me to continue. If you want, I can keep a review notes file as we go. Say "note that", "capture this", or "make this a review comment" and I will maintain it.
-Useful phrases: "continue"/"next"/"move on" goes to next group; "skip this group" leaves current group; "finish"/"wrap up" gives final recap; "note that"/"capture this"/"remember this" adds notes; "make this a review comment" drafts under possible review comments; "what notes do we have?" summarizes notes.
+I will map the PR into conceptual groups, then walk through one group at a time. After each group, I will pause so you can ask questions or steer the walkthrough. If you ask me to record something, I will maintain `<repo-root>/.agent/review-notes.md`.
+You can use these plain-language pseudo-commands at any point (no slash-command syntax required):
+
+- `continue` — move to the next group.
+- `skip this group` — leave the current group and move on.
+- `finish` — stop the walkthrough and give the final recap.
+- `note that <question or observation>` — add an open question or follow-up to the notes file.
+- `make this a review comment: <feedback>` — draft a possible review comment, tied to the current file and line when possible.
+- `what notes do we have?` — summarize the notes collected so far.
+Close variants such as `next`, `move on`, `capture this`, and `wrap up` work too.
 Do not repeat this tutorial after pauses, questions, resumes, or later groups.
 
 User commands: continue variants = "continue", "next", "move on", "go on", "keep going"; skip variants = "skip", "skip this", "skip this group"; finish variants = "finish", "wrap up", "done", "final recap"; notes variants = "note that", "capture this", "remember this", "add that to notes"; comment variants = "make this a review comment", "draft a comment", "comment on that"; notes-summary variants = "show notes", "what notes do we have?", "summarize notes". Interpret close variants by intent; if ambiguous, ask one concise clarifying question.
 
 Preparation: identify PR base, usually merge-base with origin/main, origin/master, or PR-configured base; read recent commits, full diff base..HEAD, relevant pre-change code with git show <base>:<path>, and enough current surrounding implementation. If base is ambiguous, choose likely base, state assumption, continue.
 
-Review notes: at walkthrough start offer to maintain review-notes.md in repo root unless a better path exists or user chooses one. Do not create/write notes until user asks, accepts, or gives obviously recordable feedback. Consent phrases above trigger immediate write. Comment phrases create possible review-comment drafts only; never post to GitHub/Linear without separate explicit request. Agent owns mechanics: create file, append promptly, organize, mention path after writes.
+Review notes: use `<repo-root>/.agent/review-notes.md`, where `<repo-root>` is the Git repository root. At walkthrough start offer to maintain that file. Do not create/write notes until user asks, accepts, or gives obviously recordable feedback. Consent phrases above trigger immediate write. Comment phrases create possible review-comment drafts only; never post to GitHub/Linear without separate explicit request. Agent owns mechanics: create `.agent/` when needed, create the file, append promptly, organize, and mention the repo-relative path after writes. Use another path only when the user explicitly chooses one.
 
 Notes file shape: title "Review Notes"; optional Context section only when branch/base/scope helps later; content sections only when nonempty: Open Questions entries like [Group] Question..., Follow-Ups entries like [Group] Follow-up..., Possible Review Comments entries like [path:line] Draft comment..., Resolved / Answered for moved resolved items. Open questions = author-facing uncertainties; follow-ups = later walkthrough/local/adjacent-code checks; possible comments = concise drafts tied to file+line when possible, with severity only if useful (question, nit, risk, blocking); resolved/answered = notes answered later, moved not duplicated.
 
