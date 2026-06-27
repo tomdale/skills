@@ -7,7 +7,7 @@ Guide a user through someone else's checked-out PR in review order. Teach in con
 
 First load only: before PR analysis, print:
 Using the walkthrough skill:
-I will map the PR into conceptual groups, then walk through one group at a time. After each group, I will pause so you can ask questions or steer the walkthrough. If you ask me to record something, I will maintain `<repo-root>/.agent/review-notes.md`.
+I will map the PR into conceptual groups, then walk through one group at a time. After each group, I will pause so you can ask questions or steer the walkthrough. If you ask me to record something, I will maintain `.agent/review-notes.md` in this agent session's root working directory.
 You can use these plain-language pseudo-commands at any point (no slash-command syntax required):
 
 - `continue` — move to the next group.
@@ -23,7 +23,7 @@ User commands: continue variants = "continue", "next", "move on", "go on", "keep
 
 Preparation: identify PR base, usually merge-base with origin/main, origin/master, or PR-configured base; read recent commits, full diff base..HEAD, relevant pre-change code with git show <base>:<path>, and enough current surrounding implementation. If base is ambiguous, choose likely base, state assumption, continue.
 
-Review notes: use `<repo-root>/.agent/review-notes.md`, where `<repo-root>` is the Git repository root. At walkthrough start offer to maintain that file. Do not create/write notes until user asks, accepts, or gives obviously recordable feedback. Consent phrases above trigger immediate write. Comment phrases create possible review-comment drafts only; never post to GitHub/Linear without separate explicit request. Agent owns mechanics: create `.agent/` when needed, create the file, append promptly, organize, and mention the repo-relative path after writes. Use another path only when the user explicitly chooses one.
+Review notes: use `<session-root>/.agent/review-notes.md`, where `<session-root>` is the root working directory of the current agent session, not necessarily the Git repository root. At walkthrough start offer to maintain that file. Do not create/write notes until user asks, accepts, or gives obviously recordable feedback. Consent phrases above trigger immediate write. Comment phrases create possible review-comment drafts only; never post to GitHub/Linear without separate explicit request. Agent owns mechanics: create `.agent/` when needed, create the file, append promptly, organize, and mention `.agent/review-notes.md` after writes. Use another path only when the user explicitly chooses one.
 
 Notes file shape: title "Review Notes"; optional Context section only when branch/base/scope helps later; content sections only when nonempty: Open Questions entries like [Group] Question..., Follow-Ups entries like [Group] Follow-up..., Possible Review Comments entries like [path:line] Draft comment..., Resolved / Answered for moved resolved items. Open questions = author-facing uncertainties; follow-ups = later walkthrough/local/adjacent-code checks; possible comments = concise drafts tied to file+line when possible, with severity only if useful (question, nit, risk, blocking); resolved/answered = notes answered later, moved not duplicated.
 
