@@ -19,7 +19,6 @@ does not make the local workflow worse.
 - `abstraction-boundaries`: identify and improve weak module boundaries
 - `interactive-shell`: run REPLs and prompt-driven CLIs safely
 - `tui-development`: build and verify terminal UIs
-- `benchmarking`: measure and improve performance methodically
 - `cruft`: audit low-value compatibility and glue code
 - `documentation-comments`: write and review useful code comments
 - `fix-pr-checks`: diagnose and repair failing GitHub PR checks
