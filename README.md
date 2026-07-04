@@ -22,7 +22,6 @@ does not make the local workflow worse.
 - `cruft`: audit low-value compatibility and glue code
 - `documentation-comments`: write and review useful code comments
 - `fix-pr-checks`: diagnose and repair failing GitHub PR checks
-- `tasks` and `write-task`: manage a portable markdown task queue
 - `iterm2-python-api`: write and debug iTerm2 Python scripts
 - `exec-summarizer`: compress technical output for executive readers
 - `lawyerify`: draft legal-review-oriented PR summaries

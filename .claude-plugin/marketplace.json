@@ -9,11 +9,6 @@
       "name": "tdx",
       "source": ".",
       "description": "Tom Dale's personal agent skills and lightweight workflow helpers"
-    },
-    {
-      "name": "benchmark",
-      "source": "./benchmark",
-      "description": "Create, run, and optimize software benchmarks with accurate, reproducible measurements and autonomous performance optimization"
     }
   ]
 }
