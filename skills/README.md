@@ -12,6 +12,7 @@ This plugin currently bundles:
 - `iterm2-python-api`
 - `lawyerify`
 - `minify-prompt`
+- `commit`
 - `narrative`
 - `pr-feedback`
 - `recap`

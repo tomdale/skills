@@ -30,6 +30,8 @@ does not make the local workflow worse.
 - `narrative`: write PR narratives from branch diffs
 - `pr-feedback`: draft GitHub PR review feedback
 - `recap`: summarize prior Codex work from local session transcripts
+- `commit`: commit one coherent change or propose confirmed logical groups for
+  unrelated changes, using a compact Git worker when available
 - `refactoring`: redesign TypeScript code toward a greenfield-quality module
   layout, with aggressive decomposition of monolithic files
 - `ship-pr`: stage, commit, push, and open a GitHub pull request, using the
