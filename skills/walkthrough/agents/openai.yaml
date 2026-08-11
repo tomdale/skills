@@ -1,4 +1,4 @@
 interface:
   display_name: "Walkthrough"
-  short_description: "Guide a reviewer through a checked-out PR"
-  default_prompt: "Use $walkthrough to guide me through this checked-out PR for review."
+  short_description: "Guided walkthrough of a large local change set"
+  default_prompt: "Use $walkthrough to walk me through these changes one conceptual group at a time."
