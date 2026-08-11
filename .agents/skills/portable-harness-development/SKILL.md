@@ -1,6 +1,8 @@
 ---
 name: portable-harness-development
 description: Design, author, package, test, and maintain skills or extensions that work across Codex CLI, Claude Code CLI, Pi, and other agent harnesses. Use when making agent capabilities portable, mapping harness features, defining adapters, or reviewing cross-environment compatibility.
+metadata:
+  internal: true
 ---
 
 # Portable Harness Development

@@ -1,6 +1,8 @@
 ---
 name: codex-cli-development
 description: Research, configure, and extend the OpenAI Codex CLI (codex-rs). Use when working on Codex skills, plugins, MCP servers, config layers, hooks, exec policy, sandboxing, or non-interactive (exec) mode. Also use when diagnosing skill discovery, invocation, or context-budget issues in Codex sessions.
+metadata:
+  internal: true
 ---
 
 # Codex CLI Development

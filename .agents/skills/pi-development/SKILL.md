@@ -1,6 +1,8 @@
 ---
 name: pi-development
 description: "Develop for the Pi coding agent harness (v0.79.x): skills, extensions, custom tools, packages, prompt templates, SDK, TUI, and config. Use when building, debugging, or extending Pi behavior, implementing custom tools or events, or integrating Pi programmatically via SDK."
+metadata:
+  internal: true
 ---
 
 # Pi Development
