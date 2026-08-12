@@ -38,6 +38,7 @@ before reviewing or delegating it.
 | --- | --- | --- |
 | Behavior and regression risk | Any substantive behavior change | [lenses/behavior.md](lenses/behavior.md) |
 | Readability and house style | Any substantive implementation change | [lenses/readability.md](lenses/readability.md) |
+| Prose and writing style | READMEs, docs, comments, help text, changelogs, examples, or model-facing prose | [lenses/writing-style.md](lenses/writing-style.md) |
 | Tests and validation | Tests or validation claims are affected | [lenses/tests.md](lenses/tests.md) |
 | Change scope | Any shippable change; checks diff coherence, delivery completeness, churn, and abandoned work | [lenses/change-scope.md](lenses/change-scope.md) |
 | Documentation and durable context | Documentation, comments, help text, examples, changelogs, or model-facing guidance | [lenses/documentation.md](lenses/documentation.md) |
@@ -67,7 +68,8 @@ Delegate lenses that share surface area to the same reviewer rather than
 spreading them across subagents that would each re-read the same code and file
 look-alike findings. Natural bundles: `behavior` with `concurrency`;
 `compatibility` with `api-contracts`; `data-safety` with `data-policy` and
-`security`; `accessibility` with `cli-ux`. Merge or chain
+`security`; `accessibility` with `cli-ux`; `documentation` with
+`writing-style`, which review the same prose. Merge or chain
 lenses that need the same deep context, and do not ask multiple reviewers to
 rediscover the same generic behavior.
 

@@ -72,13 +72,14 @@ The specialist lenses are switched on only when the diff touches their domain:
 **CLI UX and machine output**, **data safety**, **dependency
 boundaries**, **API contracts**, **concurrency and idempotency**, **security and
 secrets**, **data policy**, **observability**, **accessibility
-and interaction design**, **performance and resource use**, and **configuration
-and rollout safety**.
+and interaction design**, **performance and resource use**, **configuration
+and rollout safety**, and **prose and writing style** (READMEs, docs, comments,
+help text, changelogs, examples, and model-facing prose).
 
 Overlapping lenses are bundled into one reviewer so a finding is reported
 exactly once — `data-safety` and `data-policy` are split by action guardrails vs.
-retention/privacy policy, and `compatibility` decides whether an unshipped shim
-deserves to exist.
+retention/privacy policy, `documentation` and `writing-style` review the same
+prose, and `compatibility` decides whether an unshipped shim deserves to exist.
 
 ## What you get out
 
