@@ -17,6 +17,7 @@ This plugin currently bundles:
 - `pr-feedback`
 - `recap`
 - `refactoring`
+- `review-agent-changes`
 - `ship-pr`
 - `tasks`
 - `tui-development`
