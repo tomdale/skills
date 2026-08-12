@@ -1,146 +1,29 @@
 ---
 name: walkthrough
-description: Guide a user through a substantial local changeset as a conceptual, paused narrative walkthrough. Use for GitHub PR review or local/self/agent-originated work: explain the change story, group the diff into teachable units, capture review feedback or follow-up work, and finish with mode-appropriate next steps.
+description: "Guide a user through a substantial local changeset as a conceptual, paused narrative walkthrough. Use for GitHub PR review or local/self/agent-originated work: explain the change story, group the diff into teachable units, record review feedback or follow-up work, and finish with mode-appropriate next steps."
 ---
 
-Guide a user through a substantial local changeset in conceptual review order. Teach in focused chunks, pause after each chunk, and help the user understand the implementation before making judgments. Use `../narrative/SKILL.md` as the baseline style and process when needed.
+Walk through a substantial local changeset in teachable conceptual groups. Explain before/after/why, pause between groups, and help the user understand before judging. Use `../narrative/SKILL.md` for baseline style/process when useful. Default: local review; records `.question`, `.todo`.
 
-Default **workflow** is local review (own branch, agent-generated work, resumed work). Primary captures: `.question`, `.todo`.
+Mode: explicit PR intent (PR/GitHub review, feedback, inline comments, PR URL/number) selects PR mode; explicit local/self/agent intent overrides an active PR. Otherwise, before any tutorial, determine whether checkout has an active PR: run `gh pr view --json number` or `gh pr list --head "$(git branch --show-current)" --state open`; an active PR selects PR mode. Read `references/pr-review.md` before the PR tutorial. Use local mode only after that check finds no PR. If still unresolved, ask once: GitHub PR review or local walkthrough? PR mode without a viable target follows the reference's early-choice procedure.
 
-## Mode selection
+Commands: canonical dotted forms only; accept unambiguous natural-language equivalents, otherwise ask once. Navigation: `.next` next group, `.finish` final recap, `.notes` summarize notes. Each command writes to notes lazily: `.question <text>` records an open question; `.todo <text>` local change/fix; `.comment <text>` only when PR behavior is requested; `.note <text>` generic context. Attach current-diff path and line/range when known, without requiring user syntax. `.comment` is draft-only: never send external review feedback without separate explicit request.
 
-Infer the workflow before the tutorial and opening overview from the request and checkout context.
+First load: determine mode first, before printing any introduction, command, or tutorial text. Then briefly say that the walkthrough will group and explain the diff, then pause after each group; recorded items go to `<session-root>/.agent/review-notes.md`. Print exactly this Markdown table in either mode:
 
-If the user asks for a PR review or GitHub pull request review, asks to prepare or post review feedback, mentions inline review comments, author questions, a PR URL or number, or the checkout metadata identifies an active GitHub PR, read `references/pr-review.md` before starting. That reference contains the PR-specific entry checks, tutorial, captures, and finish behavior.
+| Command | Action |
+| --- | --- |
+| `.next` | Continue to the next change group |
+| `.finish` | Stop the walkthrough and show the recap |
+| `.notes` | Review all recorded questions and actions |
+| `.question <text>` | Record a question to resolve at finish |
+| `.todo <text>` | Record a local action to complete first |
 
-Otherwise use the default local workflow. Explicit user intent wins over repository state: a request for local, self, or agent review stays local even if the branch also has an open PR. If PR intent is present but no review target is available, follow the reference's early-choice procedure rather than beginning a walkthrough that cannot meet the user's expected outcome.
+In PR mode, include this final row after `.todo`: `| `.comment <text>` | Record draft PR feedback for later |`. Do not repeat the introduction after pauses, recorded items, or resumes.
+Preparation: find the base (normally merge-base with `origin/main` or `origin/master`), then inspect recent commits, full `base..HEAD` diff, pre-change code (`git show <base>:<path>`), and enough current context to explain accurately. Honor a user-specified range/path/base; if base is ambiguous, choose the likely one, state it, continue. PR checks/baselines are in the reference. Local mode needs no PR.
 
-If intent remains ambiguous and no active PR resolves it, ask once whether this is a GitHub PR review or a local walkthrough. Do not ask again after the workflow is set.
+Notes: path `<session-root>/.agent/review-notes.md`, where session root is not necessarily repo root. At start offer to maintain it; write/create `.agent/` only after an item is recorded, an accepted offer, or clearly classifiable feedback. If unclear, ask for `.question`/`.comment`/`.todo`/`.note`. Write items immediately, tersely preserving intent; do not investigate a recorded question mid-walkthrough. Title `Review Notes`; optional context; nonempty sections only: `Questions`, `Comments`, `Todos`, `Notes`, `Resolved / Answered`. Label each item with group and known location. After writing, briefly confirm kind/locus and resume. In local mode `.comment`/`.note` require explicit request.
 
-## Commands
+Opening: concise, explanatory, non-evaluative account of prior behavior, change, apparent reason, and how major pieces connect. Offer notes before group 1. Outline compact concept names (not files). Order groups by dependency and substance: foundations/API/data shape before consumers; mechanical follow-ons later; tests with behavior unless strategy merits a group. Each group uses only relevant syntax-highlighted snippets with file references; annotate outside snippets unless inline is needed; connect prior groups; do not spoil later groups. Pause for `.next`/`.finish`; offer 3–4 useful current-group questions. Answer short unblocking questions; for tangents suggest `.question`; if later-group dependent, offer answer now, later, or as a recorded question, then ask whether to continue.
 
-One canonical dotted form per operation. Accept close natural-language equivalents by intent; if ambiguous, ask one concise clarifying question. Do not invent additional command names.
-
-Navigation:
-
-- `.continue` — move to the next group.
-- `.finish` — stop the walkthrough and give the final recap.
-- `.notes` — summarize the notes file.
-
-Capture (always append to the notes file; create on first capture):
-
-- `.question <text>` — capture an open question in the notes file and keep moving. The purpose is to queue uncertainty so the walkthrough stays focused instead of branching into every rabbit hole. Do not deep-investigate on capture; resolution happens at finish (see Finish). Attach the relevant file path and line or range from the current diff when known. Keep that metadata in the notes without presenting it as a user-facing requirement.
-- `.comment <text>` — capture review feedback when the user explicitly requests PR review behavior. Read `references/pr-review.md` for its location and finish rules. When saving any capture, attach the relevant file path and line or range from the current diff when known. Keep that metadata in the notes without exposing it as a command requirement.
-- `.todo <text>` — **Local primary.** Capture a change or fix the user intends to make after the walkthrough. Attach the relevant file path and line or range from the current diff when known. Keep that metadata in the notes without presenting it as a user-facing requirement.
-- `.note <text>` — generic context, observation, or reminder. Available in either mode but not shown in the first-load table; use when the user clearly wants a non-question/non-comment/non-todo capture.
-
-`.comment` is always draft-only. Never post a GitHub review, inline comment, or other outbound feedback without a separate explicit user request.
-
-## First-load tutorial
-
-On first load only, before change analysis, print exactly the local tutorial below. Do not repeat after pauses, questions, resumes, or later groups. Do not include `.note` in the table.
-
-If `references/pr-review.md` was loaded, print that reference's PR tutorial instead.
-
-For the default local workflow, print:
-
-```text
- __        ___    _     _  _______ _   _ ____   ___  _   _  ____ _   _
- \ \      / / \  | |   | |/ /_   _| | | |  _ \ / _ \| | | |/ ___| | | |
-  \ \ /\ / / _ \ | |   | ' /  | | | |_| | |_) | | | | | | | |  _| |_| |
-   \ V  V / ___ \| |___| . \  | | |  _  |  _ <| |_| | |_| | |_| |  _  |
-    \_/\_/_/   \_\_____|_|\_\ |_| |_| |_|_| \_\\___/ \___/ \____|_| |_|
-
-I will group the diff into related changes, outline the review order, then
-narrate one group at a time. After each group, I will pause so you can respond or
-capture follow-ups. Captures go to `.agent/review-notes.md` in this session's root
-working directory.
-Local workflow. Capture questions and changes or fixes as you go; we resolve what
-we can at the end. Close natural language works too.
-
-┌──────────────────────┬──────────────────────────────────────────────┐
-│ Command              │ Effect                                       │
-├──────────────────────┼──────────────────────────────────────────────┤
-│ .continue            │ Next group                                   │
-│ .finish              │ Stop and final recap                         │
-│ .notes               │ Summarize the notes file                     │
-│ .question <text>     │ Capture a question to ask                 │
-│ .todo <text>         │ Capture a change or fix to make           │
-└──────────────────────┴──────────────────────────────────────────────┘
-```
-
-## Preparation
-
-Identify the change base, usually the merge-base with `origin/main`, `origin/master`, or the PR-configured base. Read recent commits, the full `base..HEAD` diff, relevant pre-change code with `git show <base>:<path>`, and enough current surrounding implementation to explain the change accurately. For PR-specific target checks and baselines, follow `references/pr-review.md`.
-
-If the user names a different range, commits, paths, worktree state, or base, use that instead. If the base is ambiguous, choose the likely base, state the assumption, and continue.
-
-Do not require an active PR for the local workflow. PR target checks happen before the walkthrough when the PR reference is loaded.
-
-## Review notes
-
-Use `<session-root>/.agent/review-notes.md`, where `<session-root>` is the root working directory of the current agent session, not necessarily the Git repository root.
-
-At walkthrough start, offer to maintain that file. Do not create or write it until the user runs a capture command, accepts the offer, or gives obviously recordable feedback that maps cleanly to one capture kind. If kind is unclear, ask which of `.question` / `.comment` / `.todo` / `.note`. Capture commands write immediately. Create `.agent/` lazily when needed. Use another path only when the user explicitly chooses one.
-
-The notes file is the source of truth for `.notes` and finish recaps. Terse structured review material, not a transcript. Preserve intent while rewriting vague remarks clearly. Do not add speculative findings unless the user agrees or they clearly match a capture kind. After each write, briefly say what was recorded (kind + locus if any), then return to the current walkthrough point. Do not start investigating a freshly captured `.question` mid-walkthrough.
-
-Title `Review Notes`; optional `Context` only when branch/base/scope/mode helps later. Content sections only when nonempty:
-
-- `Questions` — `[Group] …`
-- `Comments` — review feedback, with the relevant location attached when known; feedback without a stable location goes in review-body material
-- `Todos` — `[Group] …`, with the relevant location attached when known
-- `Notes` — `[Group] …`, with the relevant location attached when known
-- `Resolved / Answered` — items resolved later, moved not duplicated
-
-### Capture guidance
-
-**`.question` (both modes):** Always queue immediately. Do not try to fully answer before writing. The point is to stay on the conceptual walkthrough; deep answers wait until finish. Label by current group when known.
-
-When PR intent triggers `references/pr-review.md`, follow that reference for `.question`, `.comment`, and PR finish behavior.
-
-**Default workflow (local):**
-
-- `.question` — parked clarification for later (user or agent).
-- `.todo` — actionable local edit after the walkthrough.
-- `.comment` / `.note` — only when explicitly requested; do not offer PR review creation in this mode.
-
-## Opening overview
-
-Concise, explanatory, not evaluative: how relevant code worked before; what changed; why major changes appear to exist; how changes work together. Save detailed concerns for grouped walkthrough unless understanding is blocked. Offer review notes before the first group; continue without notes unless the user opts in.
-
-## Grouping and teaching order
-
-Group by conceptual unit, not file. A group may span files; a file may appear in multiple groups.
-
-Order: substantive before mechanical/follow-on; low-dependency before dependent when helpful; foundations before consumers; API/data-shape before call sites when needed; tests near behavior unless test strategy is its own concept.
-
-Before group 1, show the outline as a compact sequence of concept names, not file names.
-
-For each group: narrative style scoped to the group; before/after/why it matters; only relevant syntax-highlighted snippets with file references; annotate outside snippets unless inline is necessary; connect to prior groups when useful; avoid previewing later groups enough to answer likely future questions. End with pause; wait for `.continue` / `.finish` (or natural-language equivalent).
-
-At each pause, offer three or four useful questions to ask about the current group. Do not capture these prompts automatically; capture one only when the user uses a command or clearly asks to record it.
-
-When the user asks a live question mid-walkthrough: give a brief answer if it unblocks understanding of the current group; if it would pull the session into a long tangent, suggest `.question` to park it for the end. Stay scoped to the current group unless broader context is required. If the answer depends on a later group, say so and offer to answer now, cover later, or park with `.question`. Then ask whether to continue.
-
-## Finish
-
-Finish after all groups or `.finish`.
-
-Always:
-
-1. Brief recap of the conceptual sequence.
-2. Notes recap by nonempty section when notes were used.
-3. **Open questions pass:** list parked `.question` items. Resolve questions that local artifacts can answer by exploring the code, diff, tests, commits, or PR description/body when present. Record each answer briefly and move it to `Resolved / Answered`; leave unknowable questions unresolved.
-
-Then mode-specific handoff:
-
-If `references/pr-review.md` was loaded, follow its finish and draft-review instructions.
-
-**Default workflow (local):**
-
-- After the open-questions pass, offer to pass remaining questions to the agent for answers from local artifacts.
-- Offer to work through `.todo` items as local edits or a concrete implementation plan.
-- Do not offer to create or file a GitHub PR review merely because notes exist.
-
-Keep the finish recap brief; value came from the grouped walkthrough. Act on captures only after the user opts into the offered next step.
+Finish after all groups or `.finish`. PR reference controls PR record order: todos before questions, comments, or review drafting. Otherwise: briefly recap sequence and nonempty notes; resolve recorded questions from code/diff/tests/commits/PR body, record answers in `Resolved / Answered`, leave unknowable questions open; offer remaining-question investigation and `.todo` edits or plan. Never offer a GitHub review solely because notes exist. Keep recap brief; act on recorded comments or questions only after user opts in.

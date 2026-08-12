@@ -69,12 +69,12 @@ changed, and why it matters, with relevant snippets woven into the story.
 
 **Pause.** You can ask a quick clarifying question, or queue something for later
 so you don't lose it. Prefer queuing over chasing every thread now. When you are
-ready, `.continue` starts the next group; `.finish` stops early and jumps to the
+ready, `.next` starts the next group; `.finish` stops early and jumps to the
 recap.
 
 | Command            | Effect                          |
 | ------------------ | ------------------------------- |
-| `.continue`        | Next group                      |
+| `.next`            | Next group                      |
 | `.finish`          | Stop and recap                  |
 | `.notes`           | Summarize the notes file        |
 | `.question <text>` | Capture a question to ask       |
@@ -103,7 +103,7 @@ queue along the way and what happens at the end.
 
 | Command            | Effect                                |
 | ------------------ | ------------------------------------- |
-| `.continue`        | Next group                            |
+| `.next`            | Next group                            |
 | `.finish`          | Stop and recap                        |
 | `.notes`           | Summarize the notes file             |
 | `.question <text>` | Capture a question to ask             |
