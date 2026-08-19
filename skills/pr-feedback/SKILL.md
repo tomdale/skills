@@ -41,6 +41,7 @@ changed materially.
 Good comments:
 
 - Cite specific code and behavior.
+- Frame concerns, where appropriate, as a suggestion or clarifying question rather than an outright request. For example, prefer “Could we derive this from the raw trigger text so unfurl metadata cannot authorize a URL?” over “Please derive this from the raw trigger text.”
 - Ask the contract, ownership, lifecycle, state, failure-mode, or test-coverage
   question that the code raises.
 - Explain why the question matters without overstating certainty.
