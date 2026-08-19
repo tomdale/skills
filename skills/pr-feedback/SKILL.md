@@ -31,7 +31,9 @@ Do not post discovery notes, rough drafts, or unapproved comments to GitHub.
 Draft one proposed inline comment at a time. For each proposal, show:
 
 - The file and nearby code or line being commented on.
-- The exact Markdown body to post.
+- The exact Markdown body to post. The body must never contain a header,
+  title, label, or other introductory heading of any kind; begin directly with
+  the substantive feedback.
 - A short prompt asking the user to approve, edit, or skip.
 
 Wait for the user's response before proposing or posting the next comment.
@@ -88,7 +90,9 @@ After all inline candidates have been approved, skipped, or exhausted:
 
 The general comment should connect the inline comments into the larger review
 theme. Keep it concise and focused on the contract needed to evaluate the PR,
-not a second full walkthrough.
+not a second full walkthrough. It must never contain a header, title, label, or
+other introductory heading of any kind; begin directly with the substantive
+feedback.
 
 ## Completion
 
