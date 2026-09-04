@@ -14,7 +14,7 @@ process.stdout.on("error", (error) => {
 
 const usage = `Usage: codex-session-recap [--excerpt|-e] [--raw-excerpt] [--cwd <path>]
 
-Print Codex session transcript paths whose latest recorded cwd is the current
+Print Codex and Pi session transcript paths whose recorded cwd is the current
 directory or one of its child directories.
 
 Options:
@@ -80,7 +80,11 @@ function codexHome() {
   return process.env.CODEX_HOME || path.join(os.homedir(), ".codex");
 }
 
-async function* walkFiles(dir) {
+function piHome() {
+  return process.env.PI_CODING_AGENT_DIR || path.join(os.homedir(), ".pi", "agent");
+}
+
+async function* walkFiles(dir, filePattern = /^rollout-.*\.jsonl$/) {
   let entries;
   try {
     entries = await fs.promises.readdir(dir, { withFileTypes: true });
@@ -92,8 +96,8 @@ async function* walkFiles(dir) {
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      yield* walkFiles(fullPath);
-    } else if (entry.isFile() && /^rollout-.*\.jsonl$/.test(entry.name)) {
+      yield* walkFiles(fullPath, filePattern);
+    } else if (entry.isFile() && filePattern.test(entry.name)) {
       yield fullPath;
     }
   }
@@ -165,6 +169,22 @@ function parseArguments(value) {
   }
 }
 
+async function latestPiSessionInfo(file) {
+  const stream = fs.createReadStream(file, { encoding: "utf8" });
+  const lines = readline.createInterface({ input: stream, crlfDelay: Infinity });
+  const info = { cwd: null };
+
+  for await (const line of lines) {
+    const item = parseJsonLine(line);
+    if (item?.type === "session" && item.cwd) {
+      info.cwd = item.cwd;
+      break;
+    }
+  }
+
+  return info;
+}
+
 async function latestSessionInfo(file) {
   const stream = fs.createReadStream(file, { encoding: "utf8" });
   const lines = readline.createInterface({
@@ -192,6 +212,57 @@ async function latestSessionInfo(file) {
   }
 
   return info;
+}
+
+async function readPiSessionDigest(file, root) {
+  const digest = {
+    assistantOutcomes: [],
+    commands: [],
+    edits: [],
+    git: null,
+    initialCwd: null,
+    latestCwd: null,
+    startedAt: null,
+    userRequests: [],
+  };
+
+  const stream = fs.createReadStream(file, { encoding: "utf8" });
+  const lines = readline.createInterface({ input: stream, crlfDelay: Infinity });
+
+  for await (const line of lines) {
+    const item = parseJsonLine(line);
+    if (!item) continue;
+    if (item.type === "session") {
+      digest.startedAt = item.timestamp || digest.startedAt;
+      digest.initialCwd = item.cwd || digest.initialCwd;
+      digest.latestCwd = item.cwd || digest.latestCwd;
+    }
+    if (item.type === "message") {
+      collectPiMessage(digest, item.message, root);
+    }
+  }
+
+  return digest;
+}
+
+function collectPiMessage(digest, message, root) {
+  if (!message || !Array.isArray(message.content)) return;
+  for (const part of message.content) {
+    if (part.type === "text") {
+      addText(message.role === "user" ? digest.userRequests : digest.assistantOutcomes, part.text, {
+        skipSkillInjection: message.role === "user",
+      });
+      continue;
+    }
+    if (part.type !== "toolCall") continue;
+    const args = parseArguments(part.arguments);
+    if (part.name === "bash" || part.name === "exec_command") {
+      addText(digest.commands, formatCommand({ cmd: args.command || args.cmd, workdir: args.cwd || args.workdir }, root), { maxLength: 300 });
+    }
+    if (["edit", "write"].includes(part.name) && args.path) {
+      addText(digest.edits, `${part.name} ${displayPath(args.path, root)}`, { maxLength: 300 });
+    }
+  }
 }
 
 async function readSessionDigest(file, root) {
@@ -399,34 +470,38 @@ async function printRawExcerpt(file) {
   }
 }
 
-async function main() {
-  const options = parseArgs(process.argv.slice(2));
-  const root = path.resolve(options.cwd);
-  const sessionsDir = path.join(codexHome(), "sessions");
-
-  if (!fs.existsSync(sessionsDir)) {
-    throw new Error(`sessions directory not found: ${sessionsDir}`);
-  }
-
+async function processSessions({ dir, pattern, info, digest }, root, options) {
+  if (!fs.existsSync(dir)) return false;
   let found = false;
-  for await (const file of walkFiles(sessionsDir)) {
-    const session = await latestSessionInfo(file);
-    if (session.threadSource === "subagent" || !cwdIsInTree(session.cwd, root)) {
-      continue;
-    }
+  for await (const file of walkFiles(dir, pattern)) {
+    const session = await info(file);
+    if (!cwdIsInTree(session.cwd, root)) continue;
 
     found = true;
     process.stdout.write(`${file}\n`);
-    if (options.excerpt) {
-      const digest = await readSessionDigest(file, root);
-      printDigest(file, digest, root);
-    }
-    if (options.rawExcerpt) {
-      await printRawExcerpt(file);
-    }
+    if (options.excerpt) printDigest(file, await digest(file, root), root);
+    if (options.rawExcerpt) await printRawExcerpt(file);
   }
+  return found;
+}
 
-  process.exitCode = found ? 0 : 1;
+async function main() {
+  const options = parseArgs(process.argv.slice(2));
+  const root = path.resolve(options.cwd);
+  const codexFound = await processSessions({
+    dir: path.join(codexHome(), "sessions"),
+    pattern: /^rollout-.*\.jsonl$/,
+    info: latestSessionInfo,
+    digest: readSessionDigest,
+  }, root, options);
+  const piFound = await processSessions({
+    dir: path.join(piHome(), "sessions"),
+    pattern: /\.jsonl$/,
+    info: latestPiSessionInfo,
+    digest: readPiSessionDigest,
+  }, root, options);
+
+  process.exitCode = codexFound || piFound ? 0 : 1;
 }
 
 main().catch((error) => {
