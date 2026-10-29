@@ -23,6 +23,13 @@ context before any manual git inspection and before staging, commit, push, or PR
 work. It resolves the base branch and runs the git commands most useful for
 understanding branch changes.
 
+Stacked PRs: when the branch is a layer of a GitHub stack (tracked by
+`gh stack`, built on another PR's head branch, or the user asks to stack it),
+load $tdx:stacked-prs before any other PR work and follow its "Opening and
+describing a layer's PR" section for the layer's base, diff, PR creation,
+title, and description. Rerun the helper with `--base <base>` and use that
+output for the commits, diff, narrative, and `--base` value below.
+
 Linear ticket rules: when a Linear ticket ID is available or relevant, include
 it in both the commit message and the PR description. Treat a ticket ID as
 available when it is visible in the branch name, issue title, user request,
@@ -87,12 +94,10 @@ modest structure such as a title, short section headings, or a brief summary
 list when it improves scanning. Do not turn it into a heavy template, checklist
 dump, or exhaustive taxonomy. Include the Linear ticket ID according to the
 Linear ticket rules when one is available or relevant. Derive a concise PR title
-that reflects the overall change rather than merely the last commit. When a PR
-is in a GitHub stack, load `stacked-prs` before writing its title or
-description, and follow that skill for stack operations, base-branch handling,
-and its "PR titles and descriptions" section.
+that reflects the overall change rather than merely the last commit.
 
-Core commands: `<resolved-absolute-path>/branch-context.sh [repo-path]`, gh auth
+Core commands:
+`<resolved-absolute-path>/branch-context.sh [--base <branch>] [repo-path]`, gh auth
 status, gh repo view --json nameWithOwner, gh pr view --json
 number,state,title,headRefName,url, gh pr view --web, gh pr create --web --base
 <base-branch> --head <branch-name>, git push -u origin <branch-name>.

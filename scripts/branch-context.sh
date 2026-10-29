@@ -3,25 +3,47 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: branch-context.sh [repo-path]
+Usage: branch-context.sh [--base <branch>] [repo-path]
 
 Print the current repository's branch context for ship-pr workflows:
 - repo root
 - current branch
 - upstream
-- resolved base branch
+- base branch: --base when given (for a stacked PR, the branch below it),
+  otherwise the repository's default branch
 - ahead/behind counts
 - working tree summary
 - commits and diff stats relative to base
 EOF
 }
 
-if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
-  usage
-  exit 0
-fi
-
-repo_path="${1:-$PWD}"
+base_override=""
+repo_path=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --base)
+      if [[ -z "${2:-}" ]]; then
+        echo "error: --base requires a branch name" >&2
+        exit 1
+      fi
+      base_override="$2"
+      shift 2
+      ;;
+    --base=*)
+      base_override="${1#--base=}"
+      shift
+      ;;
+    *)
+      repo_path="$1"
+      shift
+      ;;
+  esac
+done
+repo_path="${repo_path:-$PWD}"
 
 if [[ ! -d "$repo_path" ]]; then
   echo "error: repo path does not exist: $repo_path" >&2
@@ -78,7 +100,11 @@ resolve_base_branch() {
   printf '%s\n' "$branch"
 }
 
-base_branch="$(resolve_base_branch "$remote_name")"
+if [[ -n "$base_override" ]]; then
+  base_branch="$base_override"
+else
+  base_branch="$(resolve_base_branch "$remote_name")"
+fi
 base_ref=""
 
 if [[ -n "$base_branch" && -n "$remote_name" ]] && git show-ref --verify --quiet "refs/remotes/$remote_name/$base_branch"; then

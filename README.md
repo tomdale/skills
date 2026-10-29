@@ -19,6 +19,7 @@ My personal agent skills and lightweight workflow helpers. These are written for
 - [recap](skills/recap/SKILL.md) — Summarize prior Codex work for a directory from local session transcripts.
 - [refactoring](skills/refactoring/SKILL.md) — Aggressively refactor TypeScript codebases toward a greenfield-quality module layout.
 - [review-agent-changes](skills/review-agent-changes/SKILL.md) — Audit agent-generated changes through parallel, context-sensitive review lenses before shipping.
+- [stacked-prs](skills/stacked-prs/SKILL.md) — Create, describe, rebase, and merge GitHub stacked pull requests with `gh stack` and the browser form.
 - [ship-pr](skills/ship-pr/SKILL.md) — Branch, commit, push, and open a GitHub pull request for the current work.
 - [tui-development](skills/tui-development/SKILL.md) — Build, test, and debug terminal user interfaces.
 - [walkthrough](skills/walkthrough/SKILL.md) — Guide a reviewer through a checked-out PR by grouping the diff into conceptual units.

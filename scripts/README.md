@@ -7,7 +7,8 @@ skill-specific helpers next to the skill unless they are reused elsewhere.
 
 ## Current Scripts
 
-- `branch-context.sh`: summarize branch/base context before shipping a PR
+- `branch-context.sh`: summarize branch/base context before shipping a PR;
+  `--base <branch>` sets the base, such as the branch below a stacked layer
 - `commit-context.sh`: summarize repository instructions and changes before
   committing
 - `task_add.js`: append a new task to `.agent/tasks.md`
