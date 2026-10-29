@@ -87,7 +87,11 @@ modest structure such as a title, short section headings, or a brief summary
 list when it improves scanning. Do not turn it into a heavy template, checklist
 dump, or exhaustive taxonomy. Include the Linear ticket ID according to the
 Linear ticket rules when one is available or relevant. Derive a concise PR title
-that reflects the overall change rather than merely the last commit.
+that reflects the overall change rather than merely the last commit. When a PR
+is in a GitHub stack, load `stacked-prs` for stack operations and base-branch
+handling. Keep its title and description focused on that layer's changes;
+GitHub's stack UI displays membership and order, so omit boilerplate explaining
+that the PR is stacked or where it sits in the stack.
 
 Core commands: `<resolved-absolute-path>/branch-context.sh [repo-path]`, gh auth
 status, gh repo view --json nameWithOwner, gh pr view --json
