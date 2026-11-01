@@ -12,7 +12,7 @@ description: >
 
 ## Establish the contract
 
-Read the brief, applicable product/design-system guidance, selected references, and actual implementation. Use design-references when substantial design work lacks a researched basis. Identify audience and task, host surface, supported themes/viewports, meaningful states, and permitted actions. Distinguish established behavior, chosen policy, and assumptions. Report conflicts rather than silently changing product policy.
+Read the brief, applicable product/design-system guidance, selected references, chosen direction/decision record, and actual implementation. Use design-references when substantial design work lacks a researched basis. When the requested work includes a new visual direction or making generic output distinctive, use design-direction before implementing that direction; targeted repairs retain the established identity. Identify audience and task, host surface, supported themes/viewports, meaningful states, and permitted actions. Distinguish established behavior, chosen policy, and assumptions. Report conflicts rather than silently changing product policy.
 
 Review the unit the reader actually uses: a complete page, embedded comment in its host, repeated list, or end-to-end interaction. Judge scanning, close reading, and repeated expert use differently. Keep the authorized scope: a critique request produces findings, while an implementation request permits bounded fixes within its requested behavior.
 
@@ -28,7 +28,7 @@ Exercise meaningful controls and links, keyboard focus/navigation, disclosures, 
 
 ## Critique the task, not a house style
 
-Look for unclear hierarchy, ambiguous action/outcome vocabulary, unnecessary boundaries, competing emphasis, unsupported claims, inaccessible presentation, ineffective controls, and mismatches between local components and the complete artifact. Consider plausible reader consequences, then test them where possible.
+Look for unclear hierarchy, ambiguous action/outcome vocabulary, unnecessary boundaries, competing emphasis, unsupported claims, inaccessible presentation, ineffective controls, and mismatches between local components and the complete artifact. Consider plausible reader consequences, then test them where possible. Compare the render with the chosen direction as well as the functional contract: check composition and character, including supporting sections and states. Preserve justified expressive choices while correcting evidenced defects; a quieter treatment is not inherently an improvement.
 
 Interpuncts, cards, badges, metrics, gradients, dense layouts, and technical terminology are contextual choices. Ask what each communicates and what would be lost by removing it. Familiar host metadata, independently saved form groups, expert vocabulary, measured progress, deliberate preview boundaries, and neutral decision controls can all be correct. A sentence-expanded design may scan worse; an always-primary action may introduce an unjustified recommendation. See references/retention-cases.md for counterexamples and paired defects.
 
