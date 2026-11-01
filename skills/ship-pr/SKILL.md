@@ -15,6 +15,14 @@ message and commit, push the branch to origin, explicitly invoke
 $tdx:narrative before drafting any PR title or body text, then open or
 create the GitHub PR in the browser.
 
+Precedence: this skill is the user's preferred personal shipping workflow.
+Repo-local instructions (AGENTS.md, CLAUDE.md, contributing guides) describe
+general workflows for a repository's contributors; when a repo-local workflow
+convention conflicts with this skill, follow this skill. Mandatory repo
+requirements, such as protected branches and commit signing, remain binding,
+as do the repo conventions this skill adopts below, such as changeset
+prerequisites and visible commit conventions.
+
 First step: resolve the bundled helper script at
 `../../scripts/branch-context.sh` relative to this skill directory, then call
 the resolved absolute path in a single tool invocation, from the target repo or
