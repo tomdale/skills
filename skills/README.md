@@ -24,6 +24,7 @@ This plugin currently bundles:
 - `ship-pr`
 - `tasks`
 - `tui-development`
+- `typography`
 - `walkthrough`
 - `write-task`
 
