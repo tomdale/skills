@@ -5,6 +5,8 @@ This plugin currently bundles:
 - `abstraction-boundaries`
 - `benchmarking`
 - `cruft`
+- `design-preflight`
+- `design-references`
 - `documentation-comments`
 - `exec-summarizer`
 - `fix-pr-checks`
