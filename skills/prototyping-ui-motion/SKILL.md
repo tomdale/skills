@@ -14,15 +14,38 @@ differences.
 Write what each visible element does in space and time: which elements move,
 where, in what order, and what must never happen (for example "no card fades in
 place"). Describe the elements that stay on screen as well as the one that
-travels. Resolve ambiguity with one question to the user; otherwise continue.
+travels.
+
+State the model of the motion before building anything: the objects, their
+coordinates (x, y, depth, scale, tilt), which properties follow springs, and
+what one input changes. "The outgoing element fades or exits while the incoming
+element enters" is not a model; it is two transitions. A model names persistent
+objects whose properties flow toward new targets. Read flow words like "stack",
+"deck", "3D" and "physical" literally: model each item as one object at a
+position, and let every object move.
+
+Scope the model. List which visible elements belong to it (for a card stack,
+the cards) and which are secondary (headings, counters, buttons). Secondary
+elements stay out of the model and get their own simpler change, for example
+staying in place and swapping their content.
+
+Resolve ambiguity with one question to the user; otherwise continue.
 
 ## 2. Study references as frames
 
-Use the user's references first. Open each in a browser and capture frames with
-the procedure in `verifying-motion`. Write down what every element does,
-including elements at rest. When a reference's source is unavailable, say so and
-work from frames and documentation. When the user gave none, find two or three
-and state which behavior each shows; ask when none fits.
+Open each of the user's references in a browser and capture frames with the
+procedure in `verifying-motion`. Write down what every element does at every
+time step, including elements at rest and elements behind the front one: what
+the cards behind the front card do while the front card moves. When a
+reference's source is unavailable, say so and work from frames and
+documentation.
+
+When the user gave none, capture frames of two or three references that
+physically do the effect (searchable demos of toast stacks, card carousels,
+fan-out layouts) and state which behavior each shows. When no found reference
+fits, say so and ask. Do not design variants from your own judgment; each
+variant follows one reference's model, and the user chooses between them in
+step 5.
 
 ## 3. Check the target against the real content
 
@@ -37,8 +60,11 @@ that remain.
 
 - One HTML file outside the product tree, with samples at the extremes of the
   real content.
-- Two or three variants that differ in kind, not in tuning, selectable in the
-  page.
+- Two or three variants that differ in kind, not in tuning, each following a
+  different model (for example over the top versus under the stack), selectable
+  in the page. When the available references show one model, the other variants
+  come from additional references or from the user's direction, never from
+  tuning alone.
 - The product's key bindings, a speed control that includes slow motion
   (¼×), and a clock that can be stepped so frames are capturable.
 

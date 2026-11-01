@@ -9,6 +9,10 @@ Passing tests and clean types say nothing about how motion looks. The evidence
 is captured frames of the result, compared with a reference or the user's
 stated intent.
 
+Frame capture uses a controllable clock (stepped virtual time), not wall time.
+A capture that takes far longer than its script calls for is a failure; kill
+it and retry with a simpler clock instead of waiting.
+
 ## 1. Capture frames
 
 - Drive the page in headless Chrome (Playwright). Pause animations and step
@@ -56,6 +60,15 @@ report says so.
   animated layout properties cause jank. When the design needs another
   property, confirm in a performance trace that smoothness holds.
 - `prefers-reduced-motion` has a calm path.
+- The elements the model marks secondary (headings, counters, buttons) do not
+  travel, scale or dim with the scene; each keeps its own simple change.
+- Unless the reference or stated intent shows it, text from two different
+  elements never shows in the same pixels; a card in flight that would cover
+  another's words either waits until it is clear or is cut at the top card's
+  edge.
+- A burst of input while holding a key matches the reference or stated intent
+  for what stays readable; flag waiting elements piling up or a growing dim
+  over the whole screen that neither calls for.
 
 Common failures to look for: opacity changes standing in for spatial motion, one
 element moving while its neighbors sit still, one fixed duration for every
