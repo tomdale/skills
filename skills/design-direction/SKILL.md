@@ -42,7 +42,7 @@ Inspect habitual choices such as an icon-card grid, a cream-and-serif editorial 
 
 ## Build the chosen character
 
-Make the defining move legible, then give supporting elements clear roles. Establish hierarchy through type scale, weight, measure, alignment, color roles, and spacing. Let containers and labels express real relationships. Use the subject's content, imagery, or mechanism as visual material where appropriate; decoration should support that idea. Match the voice to the audience and name actions by their real effects.
+Make the defining move legible, then give supporting elements clear roles. Establish hierarchy through type scale, weight, measure, alignment, color roles, and spacing. Derive the type scale and complete text styles with the installed typography skill. Let containers and labels express real relationships. Use the subject's content, imagery, or mechanism as visual material where appropriate; decoration should support that idea. Match the voice to the audience and name actions by their real effects.
 
 Carry the direction through supporting sections, controls, empty/error states, and narrow layouts. A distinctive opening followed by stock sections is incomplete execution. A working interface may need consistency and density; an expressive page may need abundant imagery or bold color. Set those choices from the brief rather than a fixed quota for fonts, images, whitespace, or animation. Use the installed motion skills when time-based behavior is part of the direction.
 
