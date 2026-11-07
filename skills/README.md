@@ -3,7 +3,7 @@
 This plugin currently bundles:
 
 - `abstraction-boundaries`
-- `benchmarking`
+- `commit`
 - `cruft`
 - `design-direction`
 - `design-preflight`
@@ -15,18 +15,19 @@ This plugin currently bundles:
 - `iterm2-python-api`
 - `lawyerify`
 - `minify-prompt`
-- `commit`
 - `narrative`
 - `pr-feedback`
+- `prototyping-ui-motion`
 - `recap`
 - `refactoring`
 - `review-agent-changes`
 - `ship-pr`
-- `tasks`
+- `stacked-prs`
 - `tui-development`
 - `typography`
+- `vercel-sandbox-work`
+- `verifying-motion`
 - `walkthrough`
-- `write-task`
 
 Add future personal skills as one directory per skill:
 

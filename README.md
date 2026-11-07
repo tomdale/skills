@@ -26,6 +26,7 @@ My personal agent skills and lightweight workflow helpers. These are written for
 - [stacked-prs](skills/stacked-prs/SKILL.md) — Create, describe, rebase, and merge GitHub stacked pull requests with `gh stack` and the browser form.
 - [ship-pr](skills/ship-pr/SKILL.md) — Branch, commit, push, and open a GitHub pull request for the current work.
 - [tui-development](skills/tui-development/SKILL.md) — Build, test, and debug terminal user interfaces.
+- [vercel-sandbox-work](skills/vercel-sandbox-work/SKILL.md) — Run isolated, reproducible work like benchmarks and test suites on disposable Vercel Sandbox Linux machines, driven remotely from the local machine.
 - [verifying-motion](skills/verifying-motion/SKILL.md) — Verify animation work with captured frames, reference comparison, measured motion invariants, and an independent reviewer.
 - [walkthrough](skills/walkthrough/SKILL.md) — Guide a reviewer through a checked-out PR by grouping the diff into conceptual units.
 
