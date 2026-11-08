@@ -9,6 +9,9 @@
  * JPEG, WebP), skipping node_modules, dist, build, out, coverage, vendor and
  * dot-directories. Files are batched and each batch goes to one `pi -p` run
  * with SKILL.md and references/checker.md as the system prompt and no tools.
+ * The numbered batch text travels as a temporary @file, not a command-line
+ * argument: long argv makes some endpoint scanners (SentinelOne) kill the
+ * spawned process outright.
  *
  * --review   report patterns the existing product already uses (exception 2 off)
  * --model    model ID (default $SLOP_CHECK_MODEL or vercel-ai-gateway/openai/gpt-6-luna-fast)
@@ -24,7 +27,8 @@
  */
 
 import { spawn } from "node:child_process";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 
@@ -152,12 +156,23 @@ function run(batch: Batch, model: string, review: boolean): Promise<RunResult> {
   const mode = review ? "review" : "edit";
   let header = `Run: ${mode}. Check every file below.\n`;
   if (batch.images.length) header += `Screenshots: ${batch.images.join(", ")}\n`;
+  let batchFile: string | null = null;
+  if (batch.texts.length) {
+    const dir = mkdtempSync(join(tmpdir(), "slop-check-"));
+    batchFile = join(dir, "batch.md");
+    writeFileSync(batchFile, batch.texts.join("\n"));
+  }
   const args = ["-p", "--no-session", "-nt", "-ne", "-ns", "-nc", "-np", "--no-mcp",
     "--no-themes", "--model", model,
     "--append-system-prompt", SKILL, "--append-system-prompt", CHECKER,
     ...batch.images.map((i) => "@" + resolve(i)),
-    header + batch.texts.join("\n")];
+    ...(batchFile ? ["@" + batchFile] : []),
+    header];
   return new Promise((done) => {
+    const finish = (r: RunResult) => {
+      if (batchFile) rmSync(dirname(batchFile), { recursive: true, force: true });
+      done(r);
+    };
     const child = spawn("pi", args, { stdio: ["inherit", "pipe", "pipe"], timeout: TIMEOUT_MS });
     const stdout: Buffer[] = [];
     const stderr: Buffer[] = [];
@@ -171,14 +186,18 @@ function run(batch: Batch, model: string, review: boolean): Promise<RunResult> {
     child.on("exit", (_code, signal) => {
       if (signal === "SIGTERM" && child.killed) timedOut = true;
     });
-    child.on("close", (code) => {
-      if (spawnError) return done({ out: null, err: `pi failed: ${spawnError.message}` });
-      if (timedOut) return done({ out: null, err: `pi failed: timed out after ${TIMEOUT_MS / 1000} seconds` });
-      if (code !== 0) {
-        const tail = Buffer.concat(stderr).toString("utf8").trim().slice(-500);
-        return done({ out: null, err: tail });
+    child.on("close", (code, signal) => {
+      if (spawnError) return finish({ out: null, err: `pi failed: ${spawnError.message}` });
+      if (timedOut) return finish({ out: null, err: `pi failed: timed out after ${TIMEOUT_MS / 1000} seconds` });
+      const tail = Buffer.concat(stderr).toString("utf8").trim().slice(-500);
+      if (signal) {
+        const hint = signal === "SIGKILL" && !tail
+          ? "; an external watcher killed it (on macOS, endpoint protection such as sentineld SIGKILLs processes it cannot scan — see `log show --predicate 'process == \"sentineld\"' --last 5m`)"
+          : "";
+        return finish({ out: null, err: `pi was killed by ${signal}${tail ? `: ${tail}` : hint}` });
       }
-      done({ out: Buffer.concat(stdout).toString("utf8"), err: null });
+      if (code !== 0) return finish({ out: null, err: tail || `pi exited ${code} with no output` });
+      finish({ out: Buffer.concat(stdout).toString("utf8"), err: null });
     });
   });
 }
