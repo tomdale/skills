@@ -112,22 +112,10 @@ function collect(paths: string[]): string[] {
   return files;
 }
 
-/** Splits on every Unicode line boundary and drops a trailing empty line. */
-function splitlines(s: string): string[] {
-  const lines = s.split(/\r\n|[\n\r\v\f\x1c\x1d\x1e\x85\u2028\u2029]/);
-  if (lines.at(-1) === "") lines.pop();
-  return lines;
-}
-
-function codePointLength(s: string): number {
-  let n = 0;
-  for (const _ of s) n++;
-  return n;
-}
-
 function numbered(path: string): string {
-  const text = new TextDecoder("utf-8").decode(readFileSync(path));
-  const body = splitlines(text).map((l, i) => `${i + 1}\t${l}`).join("\n");
+  const lines = readFileSync(path, "utf8").split(/\r?\n/);
+  if (lines.at(-1) === "") lines.pop();
+  const body = lines.map((l, i) => `${i + 1}\t${l}`).join("\n");
   return `=== ${path} ===\n${body}\n`;
 }
 
@@ -139,14 +127,13 @@ function batches(files: string[]): Batch[] {
   for (const f of files) {
     if (IMAGES.has(ext(f))) continue;
     const block = numbered(f);
-    const len = codePointLength(block);
-    if (texts.length && size + len > BATCH_CHARS) {
+    if (texts.length && size + block.length > BATCH_CHARS) {
       out.push({ texts, images: [] });
       texts = [];
       size = 0;
     }
     texts.push(block);
-    size += len;
+    size += block.length;
   }
   if (texts.length) out.push({ texts, images: [] });
   const imgs = files.filter((f) => IMAGES.has(ext(f)));
@@ -183,7 +170,7 @@ function run(batch: Batch, model: string, review: boolean): Promise<RunResult> {
       if (spawnError) return done({ out: null, err: `pi failed: ${spawnError.message}` });
       if (timedOut) return done({ out: null, err: `pi failed: timed out after ${TIMEOUT_MS / 1000} seconds` });
       if (code !== 0) {
-        const tail = Array.from(Buffer.concat(stderr).toString("utf8").trim()).slice(-500).join("");
+        const tail = Buffer.concat(stderr).toString("utf8").trim().slice(-500);
         return done({ out: null, err: tail });
       }
       done({ out: Buffer.concat(stdout).toString("utf8"), err: null });
@@ -191,14 +178,8 @@ function run(batch: Batch, model: string, review: boolean): Promise<RunResult> {
   });
 }
 
-/** Accepts an optional sign, digits with single underscores, and surrounding whitespace. */
-function parseInt10(s: string): number | null {
-  return /^\s*[+-]?\d+(_\d+)*\s*$/.test(s) ? Number(s.trim().replaceAll("_", "")) : null;
-}
-
 function usageError(msg: string): number {
-  const usage = docText().split("\n\n")[1];
-  console.error(`usage: ${usage}\n${basename(import.meta.filename)}: error: ${msg}`);
+  console.error(`${msg}\n\n${docText().trim()}`);
   return 2;
 }
 
@@ -224,9 +205,8 @@ async function main(): Promise<number> {
   const model = values.model ?? process.env.SLOP_CHECK_MODEL ?? DEFAULT_MODEL;
   let jobs = 8;
   if (values.jobs !== undefined) {
-    const n = parseInt10(values.jobs);
-    if (n === null) return usageError(`argument --jobs: invalid int value: '${values.jobs}'`);
-    jobs = n;
+    jobs = Number(values.jobs);
+    if (!Number.isInteger(jobs) || jobs < 1) return usageError(`--jobs must be a positive integer, got '${values.jobs}'`);
   }
   const files = collect(positionals);
   if (!files.length) {
@@ -246,7 +226,7 @@ async function main(): Promise<number> {
       resolvers[i](await run(work[i], model, values.review ?? false));
     }
   };
-  for (let w = 0; w < Math.min(Math.max(1, jobs), work.length); w++) void worker();
+  for (let w = 0; w < Math.min(jobs, work.length); w++) void worker();
 
   let hits = 0;
   let failed = 0;
@@ -257,7 +237,7 @@ async function main(): Promise<number> {
       console.error(`model run failed: ${r.err}`);
       continue;
     }
-    for (const raw of splitlines(r.out)) {
+    for (const raw of r.out.split("\n")) {
       const line = raw.trim().replace(/^`+|`+$/g, "");
       if (!line || !line.includes("|")) continue;
       console.log(line);
