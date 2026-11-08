@@ -75,7 +75,7 @@ Also banned:
 - Pills and badges on anything that is not a removable filter tag: counts, metadata, part numbers, "New", "Beta", suggestion chips. Use plain text in the right position.
 - Cards: every section in a bordered rounded box, cards inside cards, the three-up icon-title-blurb feature grid, a stat row of big numbers over small labels. Group with spacing, alignment and type. A box goes only around something with its own behaviour, such as an independently saved form, a draggable item, or an embedded preview of another surface.
 - Icon tiles: an icon in a tinted rounded square beside each heading or list item.
-- Coloured left-border callouts (`border-left: 3px solid` in an accent).
+- Single-side borders on boxes: a thick border on one edge of a panel or callout, in an accent or a neutral grey. On a rounded box it bends into the corners and tapers to a point (`border-left: 3px solid var(--border)` with `border-radius`). Delete it; separate the region with spacing, or give it a full hairline border when it needs a boundary.
 - Gradients on backgrounds, buttons, borders or text (`background-clip: text`); glows; blurred colour blobs; noise overlays; glass panels (`backdrop-filter: blur`).
 - Default palettes: Tailwind indigo, violet or purple as the accent (#6366f1, #8b5cf6, #7c3aed, #a855f7); near-black with neon green or cyan for developer tools; warm cream paper with a serif display face and a terracotta or rust accent for anything "thoughtful". Use the product's palette. With none, use neutral greys and one accent taken from the subject.
 - Monospace for anything other than code, paths, SHAs and commands. Timestamps, counts, status words and section labels in mono are dressing up as technical.
