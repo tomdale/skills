@@ -1,15 +1,14 @@
 ---
 name: eradicate-ui-slop
 description: >
-  Strip the tells that make agent-built UI look machine-made: middot chains,
-  pills, eyebrow labels, cards in cards, gradients, mono metadata, emoji icons,
-  invented numbers, and hedging or disclaimer copy.
-  Load before writing any UI, HTML mockup, wireframe, prototype, component,
-  landing page, or Markdown whose layout is the deliverable (a bot's GitHub
-  status comment, a rendered report), and again before showing it. Also use
-  when a design looks generic, templated, AI-generated, or sloppy, or when
-  asked to review UI for slop. Includes a fast-model checker that reads
-  source and screenshots in bulk.
+  Remove the tells that mark UI as agent-built: middot chains, eyebrows, pills,
+  nested cards, gradients, mono metadata, invented claims, and hedging copy
+  such as "local" or "simulated". Use for any UI, HTML mockup, wireframe,
+  prototype, component, landing page, or Markdown whose layout is the
+  deliverable, before writing it and again before showing it; and when asked
+  to review UI for slop, or when a design looks generic, templated, or
+  AI-generated. Every result must pass the bundled fast-model checker on its
+  source and screenshots.
 ---
 
 # Eradicate UI slop
