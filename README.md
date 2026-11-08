@@ -7,7 +7,7 @@ My personal agent skills and lightweight workflow helpers. These are written for
 - [abstraction-boundaries](skills/abstraction-boundaries/SKILL.md) — Find APIs and module boundaries operating at the wrong level of abstraction and refactor them into a cleaner shape.
 - [commit](skills/commit/SKILL.md) — Commit the current work as one coherent change, or propose logical groups when the tree contains unrelated changes.
 - [cruft](skills/cruft/SKILL.md) — Audit a codebase for low-value compatibility code, stale defensive layers, and glue that no longer has a real consumer.
-- [design-ui](skills/design-ui/SKILL.md) — Design UI fitted to its product and content: real-content inventory, closely matched references, a subject-specific idea, alternative compositions, and render verification.
+- [design-ui](skills/design-ui/SKILL.md) — Design UI fitted to its product and content: rank the real content, compose from it, build every state, and verify the render, with references for research, concept exploration, redesign baselines, and critique.
 - [documentation-comments](skills/documentation-comments/SKILL.md) — Write or review documentation comments that explain intent names and types can't express.
 - [exec-summarizer](skills/exec-summarizer/SKILL.md) — Summarize technical material for an executive reader who wants substance with minimal overhead.
 - [fix-pr-checks](skills/fix-pr-checks/SKILL.md) — Diagnose and fix failing GitHub PR checks for the current branch.
