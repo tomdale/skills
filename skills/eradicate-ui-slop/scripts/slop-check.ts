@@ -14,12 +14,13 @@
  * --model    model ID (default $SLOP_CHECK_MODEL or vercel-ai-gateway/openai/gpt-6-luna-fast)
  * --jobs     concurrent model runs (default 8)
  *
- * Reports every file in input order. A file with tells gets its path, then one
- * indented line per tell: `line N` or `screenshot`, the rule name, the quoted
- * text, and the fix. Other files get `path: no tells found` or
+ * Reports every file in input order. A file with issues gets its path, then one
+ * indented line per issue: `line N` or `screenshot`, the rule name, the quoted
+ * text, and the fix. Other files get `path: no issues found` or
  * `path: no result from the checker` when the model skipped it or its batch
- * failed. A summary line ends the report. Exits 1 when any tell was found, 0 when every file came back
- * with no tells, 2 on usage errors, a failed model run, or a skipped file.
+ * failed. A summary line ends the report. Exits 1 when any issue was found,
+ * 0 when every file came back with no issues, 2 on usage errors, a failed
+ * model run, or a skipped file.
  */
 
 import { spawn } from "node:child_process";
@@ -277,14 +278,14 @@ async function main(): Promise<number> {
       console.log(f);
       for (const t of list) console.log(`  ${t.where}  ${t.rule}  ${t.quote}  Fix: ${t.fix}`);
     } else if (clean.has(f)) {
-      console.log(`${f}: no tells found`);
+      console.log(`${f}: no issues found`);
     } else {
       missing++;
       console.log(`${f}: no result from the checker`);
     }
   }
-  const summary = [`${files.length} files in ${work.length} batches`, `${hits} tells in ${tells.size} files`,
-    `${files.length - tells.size - missing} files with no tells`];
+  const summary = [`${files.length} files in ${work.length} batches`, `${hits} issues in ${tells.size} files`,
+    `${files.length - tells.size - missing} files with no issues`];
   if (missing) summary.push(`${missing} files with no result`);
   if (failed) summary.push(`${failed} batches failed`);
   console.log(`\n${summary.join(", ")}`);
