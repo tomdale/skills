@@ -3,18 +3,18 @@ name: eradicate-ui-slop
 description: >
   Strip the tells that make agent-built UI look machine-made: middot chains,
   pills, eyebrow labels, cards in cards, gradients, mono metadata, emoji icons,
-  invented numbers, and disclaimers inside mockups.
+  invented numbers, and hedging or disclaimer copy.
   Load before writing any UI, HTML mockup, wireframe, prototype, component,
   landing page, or Markdown whose layout is the deliverable (a bot's GitHub
   status comment, a rendered report), and again before showing it. Also use
   when a design looks generic, templated, AI-generated, or sloppy, or when
-  asked to review UI for slop. Includes a scanner for the tells visible in
-  source.
+  asked to review UI for slop. Includes a fast-model checker that reads
+  source and screenshots in bulk.
 ---
 
 # Eradicate UI slop
 
-These patterns mark UI as agent-built at a glance, and readers who spot them stop trusting the rest of the work. Every pattern in this file is banned in anything you produce or touch, except under the four exceptions below.
+These patterns mark UI as agent-built at a glance, and readers who spot them stop trusting the rest of the work. Every pattern in this file is banned in anything you produce or touch, except under the three exceptions below.
 
 Remove a tell by deleting it or by restructuring the information it stood in for. Most slop is chrome filling the space where a decision about the information should have been, so deletion is the default fix. Swapping a tell for a cousin repeats it: `·` becomes `|`, `/` or `—`; a pill becomes a tinted span; an eyebrow becomes a small bold label; a card becomes a box with a hairline border.
 
@@ -23,18 +23,27 @@ Remove a tell by deleting it or by restructuring the information it stood in for
 A banned pattern stays only when one of these holds:
 
 1. The user asked for that pattern in this artifact.
-2. You are editing an existing product that already uses that exact pattern in that exact place. Match it there; do not spread it.
+2. You are editing an existing product that already uses that exact pattern in that exact place. Match it there; do not spread it. A design-system document that permits a pattern does not license new uses of it.
 3. You are reproducing third-party chrome exactly, such as GitHub's own timeline header. Content you write inside that chrome gets no exception.
-4. The scanner matched something that is not the pattern, such as a monospace rule for a real code block or a `/` inside a file path.
 
-"Compact", "conventional", "scans well", "fits the aesthetic" and "the design system allows it" are not exceptions. In source, mark each kept hit on its line with `slop-ok: <exception number> <reason>`. In your reply, list the exceptions you took.
+"Compact", "conventional", "scans well", "fits the aesthetic" and "the design system allows it" are not exceptions. In source, mark each kept pattern on its line with `slop-ok: <exception number> <reason>`; the checker skips marked lines. In your reply, list the exceptions you took.
 
 ## Scope and fidelity
 
 - Build at the fidelity asked. A rough wireframe is grey boxes, real labels and plain system type, with no colour, shadow, icon or theme polish.
-- Keep commentary out of the artifact: no "Simulation only", "illustrative", "stand-in", "design study", "not the real X", or legends explaining the mockup. Caveats go in your chat reply.
 - Write no permanent help text, tips or explainer paragraphs about how the UI works: they cover for a screen whose labels and layout do not explain themselves. Change the screen. Field input formats, required legal or safety disclosures, and consequences of destructive actions stay.
 - Use real content: the product's nouns, actual names and realistic data. Lorem ipsum, Acme, Jane Doe and "Project Alpha" are banned.
+
+## Hedging and provenance
+
+Agents write their uncertainty and their process into the interface. Readers see a product that apologises for itself. Caveats about what is simulated, missing or broken go in your chat reply, never on the screen. Banned in UI copy, including button labels, sample data and fixtures:
+
+- Provenance words describing the artifact or its data rather than a product concept (a local branch or a sample rate stays): local, locally, synthetic, simulated, mock, fixture, sample, inert, stand-in, placeholder, illustrative, playground, design study, prototype. Wrong: `Save locally`, `Rename local thread…`, `Local playground · simulated BB host`. Right: `Save`, `Rename thread…`, and no sidebar note.
+- Reassurance about side effects: `Nothing is sent to an agent or saved in BB.`
+- "Not X" hedges that define a thing by what it isn't: `These test container layouts, not device behavior`, `not a new global type scale`. State what it is, or delete the sentence.
+- Insisting on authenticity: `Real row-action reveal`, `the actual component`. Show the component.
+- Bug notes and implementation asides: `Stepper's current keyboard handler does not check its disabled prop`, `uses a floating Radix portal`. File the bug; keep the screen about the reader's task.
+- Process residue: empty logs and placeholders such as `No local actions yet` that exist only to show the mockup works.
 
 ## Copy and punctuation
 
@@ -72,23 +81,21 @@ Also banned:
 - Monospace for anything other than code, paths, SHAs and commands. Timestamps, counts, status words and section labels in mono are dressing up as technical.
 - Fonts brought in for flavour: Space Grotesk, Instrument Serif, Fraunces, Playfair, DM Serif, Syne, Outfit, Sora, Clash or Cabinet Grotesk, and italic serif captions. Use the product's typeface or the system stack, and set the scale with the typography skill.
 - Large radii and soft shadows everywhere (`rounded-2xl`, `shadow-xl`, 16–24px radius). Use one small radius, only on controls and real containers.
-- Decorative motion: hover lift (`translateY(-2px)`), hover scale, pulsing status dots, shimmer, fade-in on scroll, animated gradients.
 - Fake chrome: macOS traffic-light dots on code blocks, fake browser frames, fake terminal windows.
 - The hero formula: giant centred headline, grey subhead, a primary and ghost button pair, a screenshot in a glowing frame, a "Trusted by" strip.
 - Text under 11px, more than two grey levels of text, and muted text under 4.5:1 contrast.
 - One state encoded three times: a coloured dot, a pill and a word. Use one encoding, plus text when colour alone would carry meaning.
-- Keyboard-shortcut hints on controls nobody asked shortcuts for.
 
 ## Whole artifact
 
-A standalone page follows the system theme with `color-scheme: light dark` and `prefers-color-scheme` styles, and has no theme toggle unless asked. The page and every component on it share that theme. Text columns have a max width and the page has margins.
+A standalone page follows the system theme by default with `color-scheme: light dark` and `prefers-color-scheme` styles. A light/dark switch is fine when System is its default. The page and every component on it share that theme. Text columns have a max width and the page has margins.
 
 ## Procedure
 
 1. Before writing UI, list what the reader must know and do on this screen, in priority order. Build only that, using the lists above as constraints.
-2. Run the scanner on every file you created or changed: `python3 <this skill's directory>/scripts/slop-scan.py <files or directories>`. It reads HTML, CSS/SCSS/Less, JSX/TSX/MDX, Vue, Svelte, JS/TS and Markdown, reports unsupported files you name directly (directory walks skip unsupported types and node_modules, dist, build, out, coverage, vendor and dot-directories silently), prints `file:line rule excerpt` for each hit, and exits 1 if any unmarked hit remains. It sees source patterns only; step 4 covers the rest.
-3. Fix every hit by deleting or restructuring, then rerun. Finish when it prints `clean`; it skips lines marked `slop-ok:`.
-4. Render the result where readers will see it and screenshot it: pages and components with the browser tools in light and dark at the real container width; GitHub Markdown through `gh api markdown` in a page using GitHub's styles, or in a draft on GitHub itself. Check the screenshot against the Visual list for what source text cannot show: card nesting, hero formulas, triple-encoded state, competing emphasis, centred-everything. Fix and rescan.
-5. Report the final scanner output and the exceptions taken.
+2. Render the result where readers will see it and screenshot it: pages and components with the browser tools in light and dark at each width the surface is used at (for a gallery, each preview width); GitHub Markdown through `gh api markdown` in a page using GitHub's styles, or in a draft on GitHub itself.
+3. Check the changed source and the screenshots: `python3 <this skill's directory>/scripts/slop-check.py <files, directories, screenshots>`. It sends source files and screenshots in separate batches to a fast model with this file as the rubric and prints `path:line | tell | quote | fix` per hit; run `--help` for options. It needs the `pi` CLI. Without it, give a fast-model subagent references/checker.md, this file, and the files, headed `Run: edit` or `Run: review`.
+4. A fast model misses tells and invents some. Confirm each hit against the source or screenshot, then fix it by deleting or restructuring. Look at the screenshots yourself for card nesting, hero formulas, triple-encoded state, competing emphasis and centred-everything layouts.
+5. Re-render and re-check the files you changed until every source hit is fixed or marked `slop-ok:` and every screenshot hit is fixed or matches a marked pattern. Report the exceptions taken.
 
-When asked only to review existing UI, run the scanner and render the UI as in steps 2 and 4, skip the fixing and rescanning, and report each hit with the fix you would make.
+When asked only to review existing UI, run steps 2 and 3 with `--review` and confirm each hit as in step 4, without fixing anything. Treat imported components as part of the artifact, ignore exception 2, and report hits grouped by tell with the fix you would make.
