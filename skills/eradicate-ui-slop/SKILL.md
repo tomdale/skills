@@ -29,7 +29,7 @@ A rule of any type yields only to these exceptions:
 
 1. The user asked for that pattern in this artifact.
 2. You are editing an existing product that already uses that exact pattern in that exact place. Match it there; do not spread it. A design-system document that permits a pattern does not license new uses of it.
-3. You are reproducing third-party chrome exactly, such as GitHub's own timeline header. Content you write inside that chrome gets no exception.
+3. You are reproducing third-party chrome exactly, such as a host app's own header or a platform's native controls. Content you write inside that chrome gets no exception.
 
 "Compact", "conventional", "scans well" and "fits the aesthetic" are not exceptions. Mark each kept pattern in source on its line with `slop-ok: <exception number> <reason>`; the checker skips marked lines. Mark a waived Required rule the same way on the file's root element or first style rule, naming the rule. In your reply, list the exceptions you took.
 
@@ -42,7 +42,7 @@ Required:
 Banned:
 - **Placeholder content.** Lorem ipsum, Acme, Jane Doe, "Project Alpha".
 - **Invented claims.** Numbers that assert performance, adoption or results: `10x faster`, `18–38% more space`, user counts, uptime, ratings, testimonials, logo strips. Show a claim only when it comes from real data you were given.
-- **Provenance words** that describe the artifact or its data rather than a product concept: local, locally, synthetic, simulated, mock, fixture, sample, inert, stand-in, placeholder, illustrative, playground, design study, prototype. A local branch or a sample rate stays. Wrong: `Save locally`, `Rename local thread…`, `Local playground · simulated BB host`. Right: `Save`, `Rename thread…`, and no sidebar note.
+- **Provenance words** that describe the artifact or its data rather than a product concept: local, locally, synthetic, simulated, mock, fixture, sample, inert, stand-in, placeholder, illustrative, playground, design study, prototype. Product terms that contain these words, such as a git "local branch" or an audio "sample rate", stay. Wrong: `Save locally`, `Rename local thread…`, `Local playground · simulated BB host`. Right: `Save`, `Rename thread…`, and no sidebar note.
 - **Reassurance** about side effects: `Nothing is sent to an agent or saved in BB.`
 - **Not-X hedges** that define a thing by what it isn't: `These test container layouts, not device behavior`. State what it is, or delete the sentence.
 - **Authenticity claims**: `Real row-action reveal`, `the actual component`. Show the component.
@@ -66,10 +66,12 @@ Banned:
 - **Implementation vocabulary** in place of outcomes: "preparing the review", "reconciling findings", "syncing state". Say what the reader gets: "Adding comments to your pull request."
 - **Arrow links**: arrows and chevrons appended to links and buttons, `Learn more →`, `View all ›`.
 - **Emoji** as icons or in headings, including ✨ for AI and 🚀 for launch.
-- **Title Case** on buttons and headings. Use sentence case.
 
 Only when:
 - **Heading counts** such as `Active (3)`: only for collapsed or paginated content.
+
+Required:
+- **Casing**: follow the product's or platform's casing convention, and use one style throughout.
 
 ## Structure: grouping and emphasis
 
@@ -86,7 +88,7 @@ Banned:
 
 Only when:
 - **Boxes**: a bordered or filled container only around something with its own behaviour, such as an independently saved form, a draggable item, a code block, or an embedded preview of another surface. Group everything else with spacing, alignment and type.
-- **Pills and badges**: only for removable filter tags. Counts, metadata, part numbers, "New", "Beta" and suggestion chips are plain text in the right position.
+- **Pills and badges**: only for a state label in a list where state must scan at a glance, a user-applied label or tag, a filter chip, or a counter on a tab or nav item, and at most one per row. Metadata, part numbers, label-and-count capsules and a decorative "New" are plain text in the right position.
 
 ## Type
 
@@ -119,7 +121,7 @@ Required:
 ## Build procedure
 
 1. Before writing UI, list what the reader must know and do on this screen, in priority order. Build only that, using the rules above as constraints.
-2. Render the result where readers will see it and screenshot it: pages and components with the browser tools in light and dark at each width the surface is used at (for a gallery, each preview width); GitHub Markdown through `gh api markdown` in a page using GitHub's styles, or in a draft on GitHub itself.
+2. Render the result in the surface it ships to and screenshot it with the browser tools, in light and dark at each width the surface is used at (for a gallery, each preview width). Render Markdown with the host's own renderer.
 3. Check the changed source and the screenshots: `python3 <this skill's directory>/scripts/slop-check.py <files, directories, screenshots>`. It sends source files and screenshots in separate batches to a fast model with this file as the rubric and prints `path:line | rule | quote | fix` per hit; run `--help` for options. It needs the `pi` CLI. Without it, give a fast-model subagent references/checker.md, this file, and the files, headed `Run: edit` or `Run: review`.
 4. A fast model misses tells and invents some. Confirm each hit against the source or screenshot, then fix it by deleting or restructuring. Look at the screenshots yourself for card nesting, hero formulas, triple encoding, competing emphasis and centred-everything layouts.
 5. Re-render and re-check the files you changed until every source hit is fixed or marked `slop-ok:` and every screenshot hit is fixed or matches a marked pattern. Report the exceptions taken.
