@@ -1,15 +1,15 @@
 # Redesign baseline
 
-Run for a redesign of an existing screen, together with research.md and concept.md.
+Use for a redesign of an existing screen, along with research.md and concept.md.
 
 ## Capture the baseline
 
-During core step 1, before changing anything, screenshot the current screen in its host at each state, width and theme you will verify, with the same content you will use for the new design. Save the screenshots with the other task notes.
+In core step 1, before you change anything, screenshot the current screen in its host at every state, width and theme you'll verify, using the same content as the new design.
 
 ## Compare
 
-At core step 4, put each new screenshot beside the baseline captured at the same state, content, width and theme. Name what the reader gains on the task from step 1 and what the redesign costs, such as more scanning for less height.
+In core step 4, put each new screenshot next to the matching baseline. Name what the reader gains on their task and what it costs, such as more scanning in exchange for less height.
 
 ## Report
 
-State the gains and costs the comparison shows. When no comparable baseline exists, say so and report the improvement as unverified.
+Report the gains and costs. If you have no matching baseline, say so and call the improvement unverified.
