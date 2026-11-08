@@ -62,6 +62,8 @@ Banned:
 - **Em dashes** anywhere in UI copy: readers take them as the signature of model-written text. Use a period, a colon, or a second line.
 - **Label-and-count capsules**: `Concerns · 1`, a `Part 1 of 3` pill. Put the count in a sentence or heading, or delete it.
 - **Repeated status**: a status word on each row that repeats the group heading.
+- **Filler and restated names**: words that add nothing or repeat what is already on screen. A frame whose heading repeats the page title loses its heading.
+  - Wrong: `Settings composition`, `Existing type roles`, `Color-token samples`. Right: `Settings`, `Type roles`, `Colors`.
 - **Tagline formulas**: `Fast. Simple. Secure.`, `One repository. A worktree for every agent.`, `X, reimagined`, `Built for Y`, `Everything you need to Z`, `Meet X`, and the words supercharge, unlock, seamless, effortless, powerful, elevate, empower.
 - **Implementation vocabulary** in place of outcomes: "preparing the review", "reconciling findings", "syncing state". Say what the reader gets: "Adding comments to your pull request."
 - **Arrow links**: arrows and chevrons appended to links and buttons, `Learn more →`, `View all ›`.
