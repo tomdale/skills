@@ -7,9 +7,7 @@ My personal agent skills and lightweight workflow helpers. These are written for
 - [abstraction-boundaries](skills/abstraction-boundaries/SKILL.md) — Find APIs and module boundaries operating at the wrong level of abstraction and refactor them into a cleaner shape.
 - [commit](skills/commit/SKILL.md) — Commit the current work as one coherent change, or propose logical groups when the tree contains unrelated changes.
 - [cruft](skills/cruft/SKILL.md) — Audit a codebase for low-value compatibility code, stale defensive layers, and glue that no longer has a real consumer.
-- [design-direction](skills/design-direction/SKILL.md) — Turn reference research into a distinctive, brief-specific concept and composition while respecting established identity and useful conventions.
-- [design-preflight](skills/design-preflight/SKILL.md) — Check reader tasks, truthful copy, hierarchy, interactions, and whole-artifact rendering before delivery without imposing a house style.
-- [design-references](skills/design-references/SKILL.md) — Research at least four closely matched, inspected references where available and turn them into brief-specific design decisions.
+- [design-ui](skills/design-ui/SKILL.md) — Design UI fitted to its product and content: real-content inventory, closely matched references, a subject-specific idea, alternative compositions, and render verification.
 - [documentation-comments](skills/documentation-comments/SKILL.md) — Write or review documentation comments that explain intent names and types can't express.
 - [exec-summarizer](skills/exec-summarizer/SKILL.md) — Summarize technical material for an executive reader who wants substance with minimal overhead.
 - [fix-pr-checks](skills/fix-pr-checks/SKILL.md) — Diagnose and fix failing GitHub PR checks for the current branch.
@@ -29,10 +27,6 @@ My personal agent skills and lightweight workflow helpers. These are written for
 - [vercel-sandbox-work](skills/vercel-sandbox-work/SKILL.md) — Run isolated, reproducible work like benchmarks and test suites on disposable Vercel Sandbox Linux machines, driven remotely from the local machine.
 - [verifying-motion](skills/verifying-motion/SKILL.md) — Verify animation work with captured frames, reference comparison, measured motion invariants, and an independent reviewer.
 - [walkthrough](skills/walkthrough/SKILL.md) — Guide a reviewer through a checked-out PR by grouping the diff into conceptual units.
-
-For substantial visual design work, use `design-references` to gather evidence, `design-direction` to choose and execute the concept, and `design-preflight` to verify the rendered result. Reuse the same brief and decision record across the three. Small repairs within an established direction can go directly to implementation and preflight.
-
-`design-direction` adapts Anthropic's `frontend-design` under Apache-2.0; its [attribution and modification notice](skills/design-direction/NOTICE.md) and [license](skills/design-direction/LICENSE.txt) accompany the skill.
 
 ## Install
 

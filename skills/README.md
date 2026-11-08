@@ -5,9 +5,7 @@ This plugin currently bundles:
 - `abstraction-boundaries`
 - `commit`
 - `cruft`
-- `design-direction`
-- `design-preflight`
-- `design-references`
+- `design-ui`
 - `documentation-comments`
 - `exec-summarizer`
 - `fix-pr-checks`
