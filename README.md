@@ -9,6 +9,7 @@ My personal agent skills and lightweight workflow helpers. These are written for
 - [cruft](skills/cruft/SKILL.md) — Audit a codebase for low-value compatibility code, stale defensive layers, and glue that no longer has a real consumer.
 - [design-ui](skills/design-ui/SKILL.md) — Design UI fitted to its product and content: rank the real content, compose from it, build every state, and verify the render, with references for research, concept exploration, redesign baselines, and critique.
 - [documentation-comments](skills/documentation-comments/SKILL.md) — Write or review documentation comments that explain intent names and types can't express.
+- [eradicate-ui-slop](skills/eradicate-ui-slop/SKILL.md) — Ban the visual and copy tells of agent-built UI, with a scanner that flags them in source.
 - [exec-summarizer](skills/exec-summarizer/SKILL.md) — Summarize technical material for an executive reader who wants substance with minimal overhead.
 - [fix-pr-checks](skills/fix-pr-checks/SKILL.md) — Diagnose and fix failing GitHub PR checks for the current branch.
 - [interactive-shell](skills/interactive-shell/SKILL.md) — Interact with programs that require a real terminal or PTY, like REPLs and prompt-driven CLIs.

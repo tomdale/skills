@@ -7,6 +7,7 @@ This plugin currently bundles:
 - `cruft`
 - `design-ui`
 - `documentation-comments`
+- `eradicate-ui-slop`
 - `exec-summarizer`
 - `fix-pr-checks`
 - `interactive-shell`
