@@ -13,7 +13,7 @@ with SKILL.md and references/checker.md as the system prompt and no tools.
 --model    model ID (default $SLOP_CHECK_MODEL or vercel-ai-gateway/openai/gpt-6-luna-fast)
 --jobs     concurrent model runs (default 8)
 
-Prints `path:line | tell | quote | fix` per hit and `path | clean` per clean
+Prints `path:line | rule | quote | fix` per hit and `path | clean` per clean
 file, then a count. Exits 1 when any hit was reported, 0 when every file is
 clean, 2 on usage errors or when a model run failed.
 """
