@@ -14,9 +14,12 @@
  * --model    model ID (default $SLOP_CHECK_MODEL or vercel-ai-gateway/openai/gpt-6-luna-fast)
  * --jobs     concurrent model runs (default 8)
  *
- * Prints `path:line | rule | quote | fix` per hit and `path | clean` per clean
- * file, then a count. Exits 1 when any hit was reported, 0 when every file is
- * clean, 2 on usage errors or when a model run failed.
+ * Reports every file in input order. A file with tells gets its path, then one
+ * indented line per tell: `line N` or `screenshot`, the rule name, the quoted
+ * text, and the fix. Other files get `path: no tells found` or
+ * `path: no result from the checker` when the model skipped it or its batch
+ * failed. A summary line ends the report. Exits 1 when any tell was found, 0 when every file came back
+ * with no tells, 2 on usage errors, a failed model run, or a skipped file.
  */
 
 import { spawn } from "node:child_process";
@@ -38,6 +41,7 @@ const DEFAULT_MODEL = "vercel-ai-gateway/openai/gpt-6-luna-fast";
 
 type Batch = { texts: string[]; images: string[] };
 type RunResult = { out: string; err: null } | { out: null; err: string };
+type Tell = { where: string; rule: string; quote: string; fix: string };
 
 /** The doc comment above, without comment markers; it is the help text. */
 function docText(): string {
@@ -228,7 +232,12 @@ async function main(): Promise<number> {
   };
   for (let w = 0; w < Math.min(jobs, work.length); w++) void worker();
 
-  let hits = 0;
+  const byPath = new Map(files.map((f) => [resolve(f), f]));
+  const tells = new Map<string, Tell[]>();
+  const clean = new Set<string>();
+  const findFile = (reported: string): string | undefined =>
+    byPath.get(resolve(reported)) ?? files.find((f) => f.endsWith(reported) || reported.endsWith(f));
+
   let failed = 0;
   for (const p of results) {
     const r = await p;
@@ -239,13 +248,47 @@ async function main(): Promise<number> {
     }
     for (const raw of r.out.split("\n")) {
       const line = raw.trim().replace(/^`+|`+$/g, "");
-      if (!line || !line.includes("|")) continue;
-      console.log(line);
-      if (!line.endsWith("| clean")) hits++;
+      if (!line.includes("|")) continue;
+      const parts = line.split("|").map((x) => x.trim());
+      const loc = /^(.*?)(?::(\d+|screenshot))?$/.exec(parts[0])!;
+      const file = findFile(loc[1]);
+      if (!file) {
+        console.error(`unmatched checker output: ${line}`);
+        continue;
+      }
+      if (parts.length === 2 && parts[1] === "clean") {
+        clean.add(file);
+        continue;
+      }
+      const where = loc[2] === undefined ? "file" : loc[2] === "screenshot" ? "screenshot" : `line ${loc[2]}`;
+      const [rule = "", quote = "", ...fix] = parts.slice(1);
+      const list = tells.get(file) ?? [];
+      list.push({ where, rule, quote, fix: fix.join(" | ") });
+      tells.set(file, list);
     }
   }
-  console.log(`\n${files.length} files in ${work.length} batches, ${hits} hits${failed ? `, ${failed} batches failed` : ""}`);
-  if (failed) return 2;
+
+  let hits = 0;
+  let missing = 0;
+  for (const f of files) {
+    const list = tells.get(f);
+    if (list) {
+      hits += list.length;
+      console.log(f);
+      for (const t of list) console.log(`  ${t.where}  ${t.rule}  ${t.quote}  Fix: ${t.fix}`);
+    } else if (clean.has(f)) {
+      console.log(`${f}: no tells found`);
+    } else {
+      missing++;
+      console.log(`${f}: no result from the checker`);
+    }
+  }
+  const summary = [`${files.length} files in ${work.length} batches`, `${hits} tells in ${tells.size} files`,
+    `${files.length - tells.size - missing} files with no tells`];
+  if (missing) summary.push(`${missing} files with no result`);
+  if (failed) summary.push(`${failed} batches failed`);
+  console.log(`\n${summary.join(", ")}`);
+  if (failed || missing) return 2;
   return hits ? 1 : 0;
 }
 
