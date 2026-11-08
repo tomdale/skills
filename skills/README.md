@@ -3,6 +3,7 @@
 This plugin currently bundles:
 
 - `abstraction-boundaries`
+- `agent-voice`
 - `commit`
 - `cruft`
 - `design-ui`

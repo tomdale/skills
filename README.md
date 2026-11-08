@@ -5,6 +5,7 @@ My personal agent skills and lightweight workflow helpers. These are written for
 ## Skills
 
 - [abstraction-boundaries](skills/abstraction-boundaries/SKILL.md) — Find APIs and module boundaries operating at the wrong level of abstraction and refactor them into a cleaner shape.
+- [agent-voice](skills/agent-voice/SKILL.md) — Review prose against the writing standard and run the bundled voicecheck command.
 - [commit](skills/commit/SKILL.md) — Commit the current work as one coherent change, or propose logical groups when the tree contains unrelated changes.
 - [cruft](skills/cruft/SKILL.md) — Audit a codebase for low-value compatibility code, stale defensive layers, and glue that no longer has a real consumer.
 - [design-ui](skills/design-ui/SKILL.md) — Design UI fitted to its product and content: rank the real content, compose from it, build every state, and verify the render, with references for research, concept exploration, redesign baselines, and critique.
