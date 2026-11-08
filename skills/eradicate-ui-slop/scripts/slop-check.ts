@@ -46,7 +46,7 @@ function docText(): string {
   return body.split("\n").map((l) => l.replace(/^ \*( |$)/, "")).join("\n");
 }
 
-/** Lowercased extension as Python's os.path.splitext computes it: leading dots do not start one. */
+/** Lowercased extension; a dotfile such as `.css` has none. */
 function ext(p: string): string {
   const name = basename(p);
   const i = name.lastIndexOf(".");
@@ -62,8 +62,8 @@ function isFile(p: string): boolean {
   return statSync(p, { throwIfNoEntry: false })?.isFile() ?? false;
 }
 
-/** Joins like os.path.join so reported paths keep the caller's spelling (no normalisation). */
-function pyJoin(root: string, name: string): string {
+/** Joins without normalising, so reported paths keep the caller's spelling. */
+function joinPath(root: string, name: string): string {
   return root.endsWith("/") ? root + name : root + "/" + name;
 }
 
@@ -80,7 +80,7 @@ function walk(root: string, files: string[]): void {
   const names: string[] = [];
   for (const e of entries) {
     if (e.isDirectory()) dirs.push(e.name);
-    else if (e.isSymbolicLink() && isDir(pyJoin(root, e.name))) {
+    else if (e.isSymbolicLink() && isDir(joinPath(root, e.name))) {
       dirs.push(e.name);
       linkedDirs.add(e.name);
     } else names.push(e.name);
@@ -88,11 +88,11 @@ function walk(root: string, files: string[]): void {
   for (const n of names.sort()) {
     const x = ext(n);
     if ((SOURCE.has(x) || IMAGES.has(x)) && !n.endsWith(".min.js") && !n.endsWith(".d.ts")) {
-      files.push(pyJoin(root, n));
+      files.push(joinPath(root, n));
     }
   }
   for (const d of dirs.filter((d) => !SKIP_DIRS.has(d) && !d.startsWith(".")).sort()) {
-    if (!linkedDirs.has(d)) walk(pyJoin(root, d), files);
+    if (!linkedDirs.has(d)) walk(joinPath(root, d), files);
   }
 }
 
@@ -112,15 +112,14 @@ function collect(paths: string[]): string[] {
   return files;
 }
 
-/** Python str.splitlines(): every Unicode line boundary, no trailing empty line. */
+/** Splits on every Unicode line boundary and drops a trailing empty line. */
 function splitlines(s: string): string[] {
   const lines = s.split(/\r\n|[\n\r\v\f\x1c\x1d\x1e\x85\u2028\u2029]/);
   if (lines.at(-1) === "") lines.pop();
   return lines;
 }
 
-/** Length in code points, matching Python's len(). */
-function pyLen(s: string): number {
+function codePointLength(s: string): number {
   let n = 0;
   for (const _ of s) n++;
   return n;
@@ -140,7 +139,7 @@ function batches(files: string[]): Batch[] {
   for (const f of files) {
     if (IMAGES.has(ext(f))) continue;
     const block = numbered(f);
-    const len = pyLen(block);
+    const len = codePointLength(block);
     if (texts.length && size + len > BATCH_CHARS) {
       out.push({ texts, images: [] });
       texts = [];
@@ -192,7 +191,7 @@ function run(batch: Batch, model: string, review: boolean): Promise<RunResult> {
   });
 }
 
-/** Python int(): optional sign, digits with single underscores, surrounding whitespace. */
+/** Accepts an optional sign, digits with single underscores, and surrounding whitespace. */
 function parseInt10(s: string): number | null {
   return /^\s*[+-]?\d+(_\d+)*\s*$/.test(s) ? Number(s.trim().replaceAll("_", "")) : null;
 }
