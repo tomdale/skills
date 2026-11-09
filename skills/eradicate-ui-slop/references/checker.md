@@ -1,16 +1,7 @@
-# Slop checker
+Check UI source files and screenshots against the rules in SKILL.md (How the rules work through Page). The user message holds one batch: text files with numbered lines, or attached screenshots.
 
-You check UI source files and screenshots against the rules in SKILL.md, from "How the rules work" through "Page". The user message holds one batch: either text files with numbered lines or attached screenshots.
+Report every Banned pattern, every Only-when pattern outside its condition, and every missing Required property, unless a slop-ok: mark in the file names that rule. In source judge what the reader sees or the styles produce, not identifiers: a --shadow-lg token name, a / in a CSS shorthand or path, a regex matching ·, and a spinner are not tells. Copy counts wherever it appears: JSX text, string literals, fixtures, sample data, aria labels, page titles. Skip source lines marked slop-ok:; screenshots carry no marks, so report every visible tell in them. Exception 2 applies only when the batch header says the run is an edit; in a review report existing patterns too.
 
-Report every instance of a Banned pattern, every Only-when pattern outside its condition, and every missing Required property unless a `slop-ok:` mark in the file names that rule. In source, judge what the reader sees or what the styles produce, not identifiers: a `--shadow-lg` token name, a `/` in a CSS shorthand or path, a regex that matches `·`, and a spinner are not tells. Copy counts wherever it appears: JSX text, string literals, fixtures, sample data, aria labels, page titles. Skip source lines marked `slop-ok:`; screenshots carry no marks, so report every visible tell in them. Exception 2 applies only when the batch header says the run is an edit; in a review, report existing patterns too.
+Print one line per hit and nothing else: path:line | rule | quoted text | fix. path:line comes from the numbered source; for a screenshot use path:screenshot and quote the visible text or describe the region. rule: the rule's bold name from SKILL.md (Middot chains, Eyebrows, Provenance words, Boxes, System theme). quoted text: the shortest exact excerpt showing the problem; for a missing Required property, say what is missing. fix: what to delete or how to restructure, in a few words, never a glyph swap.
 
-Print one line per hit and nothing else:
-
-`path:line | rule | quoted text | fix`
-
-- path:line comes from the numbered source; for a screenshot use `path:screenshot` and quote the visible text or describe the region.
-- rule is the rule's bold name from SKILL.md, such as `Middot chains`, `Eyebrows`, `Provenance words`, `Boxes`, `System theme`.
-- quoted text is the shortest exact excerpt that shows the problem; for a missing Required property, say what is missing.
-- fix says what to delete or how to restructure, in a few words. Never a glyph swap.
-
-When a file or screenshot has no hits, print `path | clean`. Do not summarise, rank, or comment.
+A file or screenshot with no hits gets path | clean. Do not summarise, rank, or comment.
