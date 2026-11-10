@@ -35,3 +35,8 @@
 {"sentence": "Status: first draft · 2026-11-09", "flag": 1, "why": "draft byline"}
 {"sentence": "The scope covers Code Reviews · Security Reviews · Investigations.", "flag": 1, "why": "mid-dot chain"}
 {"sentence": "The scope covers Code Reviews, Security Reviews and Investigations.", "flag": 0, "why": "plain list"}
+{"sentence": "Those excerpts leave the machine through AI Gateway when the model pass runs.", "flag": 1, "why": "data motion"}
+{"sentence": "Your API key never travels beyond this laptop.", "flag": 1, "why": "data motion"}
+{"sentence": "The payload makes its way to the build server after each commit.", "flag": 1, "why": "data motion"}
+{"sentence": "When the model pass runs, voicecheck sends these excerpts to AI Gateway.", "flag": 0, "why": "named sender"}
+{"sentence": "The request times out after 30 seconds.", "flag": 0, "why": "protocol term"}

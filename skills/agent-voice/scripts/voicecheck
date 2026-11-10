@@ -54,6 +54,7 @@ PATTERNS: list[tuple[str, str, str]] = [
     ("says so", "reader", r"\b(?:say|says|said)\s+so\b"),
     ("passive voice", "subject", r"\b(?:am|is|are|was|were|be|been|being)\s+(?:(?:not|[a-z]+ly)\s+)?(?:[a-z]+ed|built|brought|done|given|held|kept|known|made|read|sent|shown|written)\b"),
     ("abstract verb", "subject", r"\b(?:becomes|leverages|utilises|utilizes)\s+(?:a|an|the|one|its)\b"),
+    ("data motion", "subject", r"\b(?:leaves?|leaving|left)\s+(?:the|your|this|its)\s+(?:machine|device|computer|laptop|network|browser|host|process)\b|\b(?:travels?|travell?ed|travell?ing|flows?|flowed|flowing)\b|\bmakes?\s+(?:its|their)\s+way\b|\b(?:ends?|ended)\s+up\s+(?:in|on|at)\b"),
     ("gating word", "subject", r"\bgat(?:e|es|ed|ing)\b"),
     ("verdict verb", "subject", r"\b(?:survives?|survived|surviving|(?:still )?holds|(?:still )?stands)\b[^.!?\n]{0,60}:"),
     ("ascribed intent", "subject", r"\b(?:deliberately|intentionally)\s+(?:quieter|louder|softer|brighter|darker|calmer|more|less)\b|\b(?:quieter|louder|softer|brighter|darker)\s+(?:on purpose|by design)\b"),
@@ -99,7 +100,12 @@ DEVICES = (
     "11. formulaic join: it joins an affirmative and a negative claim as a set formula ('two items are not "
     "decisions but have to be settled'); "
     "12. jargon or verdict lead-in: it uses 'gate' or 'gated' for an approval or condition, or announces a "
-    "verdict before a colon ('the rule holds: eight tests pass')."
+    "verdict before a colon ('the rule holds: eight tests pass'); "
+    "13. data in motion: it makes data, a message or a request the subject of a motion verb and drops "
+    "the program that moves it ('the excerpts leave the machine through the gateway', 'your keys never "
+    "travel off the device', 'the payload makes its way to the server'); a sentence whose subject is the "
+    "program doing the work ('voicecheck sends the excerpts to the gateway', 'the renderer prints a row') or a protocol term the reader uses ('the request "
+    "times out', 'the packet is dropped') states the fact."
 )
 
 # The count example appears twice on purpose: with it stated once, the decision
@@ -139,7 +145,7 @@ FIXES = {
 }
 
 CRITERIA = {
-    "subject": "device 3, 7, 8, 9 or 10: intent on appearance, an abstract verb, a component made the actor of a task, state in place of behaviour, or a missing actor the reader needs",
+    "subject": "device 3, 7, 8, 9, 10 or 13: intent on appearance, an abstract verb, a component made the actor of a task, state in place of behaviour, a missing actor the reader needs, or data moving with no named sender",
     "writer": "device 4: the writer's own certainty, candor or reading standing in the subject position",
     "claim": "device 1, 11 or 12: a preemptive contrast, a formulaic affirmative and negative join, 'gate' jargon, or a verdict announced before a colon",
     "reader": "device 5 or 6: unearned uniqueness, talk about the document, unrequested draft metadata, or items joined with middle dots",

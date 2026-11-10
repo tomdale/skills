@@ -30,6 +30,8 @@ class CandidateTests(unittest.TestCase):
             "The rule holds: eight tests pass.": "verdict verb",
             "Status: first draft.": "draft byline",
             "The list uses Alpha · Beta.": "mid-dot chain",
+            "Those excerpts leave the machine through AI Gateway.": "data motion",
+            "Your keys never travel off the device.": "data motion",
         }
         for sentence, expected in cases.items():
             with self.subTest(sentence=sentence):
