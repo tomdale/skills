@@ -70,35 +70,51 @@ PATTERNS: list[tuple[str, str, str]] = [
 ]
 
 DEVICES = (
-    "1. it contrasts its claim against a reading nobody offered, saying what a thing is not in order to "
-    "preempt a complaint ('the shape is a rail rather than a bullet list', 'not a drawing, a change'); "
-    "2. it minimises what it describes ('gets no X at all, only Y', 'nothing but', 'just', 'simply'); "
-    "3. it gives a layout or component an intention to describe its appearance ('deliberately quieter'); "
-    "4. it reports the writer's own certainty or candor ('evidence', 'finding', 'observed', "
-    "'honest caveats', 'I cannot yet name it'); "
-    "5. it asserts unearned importance or uniqueness ('the most important thing', 'the only row that', "
-    "'the whole point'); "
-    "6. it talks about the document instead of the subject ('this page shows', 'listed below'), or adds "
-    "unrequested draft metadata or middle-dot chains; "
-    "7. it uses an abstract verb where a plain one exists ('carries a title', 'names the field', "
-    "'becomes a panel'); "
-    "8. it uses carry except for physical transport, uses name unusually as a verb, or says a software "
-    "component owns a task or resource; "
-    "9. it describes an object staying or remaining a trait or place, or retaining data; "
-    "10. it says a subject says so, uses passive or ambiguous actorless language, or gives non-actionable "
-    "meta-narrative; "
-    "11. it joins unrelated affirmative and negative claims into a formulaic sentence; "
-    "12. it uses gate or gated as jargon for an approval or condition, or announces a verdict before "
-    "a colon instead of stating its support. "
-    "Keep factual technical constraints and necessary safety information. Allow deliberately for real "
-    "design choices. Allow surface and expose when clear. Allow literal physical carrying and ordinary "
-    "literal naming."
+    "1. contrast: it says what a thing is not, preempting a complaint nobody made ('a line rather than a list'); "
+    "2. minimising: it shrinks what it describes ('gets no X at all, only Y', 'nothing but', 'just'); "
+    "3. intent on appearance: it gives a layout or component a deliberateness a reader could not act on "
+    "('deliberately quieter than the header'); 'deliberately' attached to a step with a named owner "
+    "('deletion is deliberately left to the CLI') states policy; "
+    "4. writer framing: it puts the writer's own certainty, candor or reading in the subject position ('an "
+    "honest caveat', 'I cannot yet name the cause', a line that opens with 'Observed:' to introduce the "
+    "writer's reading); "
+    "5. unearned uniqueness: it asserts importance or uniqueness the sentence does not show ('the most "
+    "important thing', 'the only row that', 'the whole point'); a bound a reader needs ('the only "
+    "plugin-owned route is a navPanel') states the fact; "
+    "6. document furniture: it talks about the document instead of the subject ('this page shows'), adds "
+    "draft metadata nobody asked for ('Status: first draft'), or joins items with middle dots "
+    "('a · b · c'); "
+    "7. abstract verb: it reaches for a verb that hides the action ('X becomes a panel', 'the field "
+    "carries a title', 'the heading names the project' where a plainer verb exists); a component that "
+    "surfaces or exposes something a reader uses ('the panel surfaces errors') states what it does; "
+    "8. component as actor: it makes a component the actor of a task or resource where the reader needs "
+    "the action ('the plugin owns deletion'); a classifier names a thing the reader needs ('a "
+    "plugin-owned route', 'workstream ownership'); "
+    "9. state in place of behaviour: it says a thing stays, remains or retains where the reader needs what "
+    "it does ('the core stays on loopback' for binds there, 'the browser context remains isolated' for what "
+    "keeps it apart); a stated constraint about where a reader may write data is the fact; "
+    "10. missing actor: it says a subject 'says so', or drops the actor a reader needs behind a passive "
+    "('the selectors are validated'); a passive that gives the actor and the step ('deletion is left to "
+    "the CLI') states a procedure; "
+    "11. formulaic join: it joins an affirmative and a negative claim as a set formula ('two items are not "
+    "decisions but have to be settled'); "
+    "12. jargon or verdict lead-in: it uses 'gate' or 'gated' for an approval or condition, or announces a "
+    "verdict before a colon ('the rule holds: eight tests pass')."
 )
 
-STRICT = (
-    "Flag the sentence when it uses one of the devices listed above. Say which one, and leave the "
-    "question of whether that use was justified to the reader of the report."
+# The count example appears twice on purpose: with it stated once, the decision
+# call scores "eight passed and one was skipped" as padding, and with the second
+# sentence it returns the sentence to the report list.
+DECISION = (
+    "The vocabulary in these examples never decides a case. A sentence whose job is to report — a "
+    "constraint, an instruction, an attribute, an API note, an operational label, a count of what a run "
+    "produced — is clean, and the wording changes that only where the device names framing that hides the "
+    "report; a count of what a run produced ('eight passed and one was skipped') is a report, not a "
+    "stance. Each device above states where its own boundary sits; apply that boundary, not the "
+    "vocabulary."
 )
+
+STRICT = "Flag the target when the wording itself is the defect. " + DECISION
 
 # Phrase reliability from an earlier audit ranks model findings. Patterns without
 # an estimate use 0.5; the estimates are not calibrated model probabilities.
@@ -123,12 +139,12 @@ FIXES = {
 }
 
 CRITERIA = {
-    "subject": "the sentence hides an actor in passive or ambiguous prose, attributes ownership to a software component, uses nonliteral carry or an unusual name verb, or describes a trait or place with stay, remain, or retain",
-    "writer": "the sentence frames facts as evidence or observed, or centers the writer's confidence, candor, or impression",
-    "claim": "the sentence corrects an objection nobody raised, uses a formulaic X-not-Y contrast, dresses a fragment as a heading, or announces a verdict before a colon; keep meaningful safety warnings",
-    "reader": "the sentence asserts unearned importance, tours the document, adds unrequested draft metadata, or joins items with middle dots; allow factual technical bounds and flag a subject saying so",
-    "shape": "the sentence adds padding, a non-actionable aside, or an unrelated affirmative and negative clause joined together",
-    "none": "none of these; the sentence states a fact about the work plainly",
+    "subject": "device 3, 7, 8, 9 or 10: intent on appearance, an abstract verb, a component made the actor of a task, state in place of behaviour, or a missing actor the reader needs",
+    "writer": "device 4: the writer's own certainty, candor or reading standing in the subject position",
+    "claim": "device 1, 11 or 12: a preemptive contrast, a formulaic affirmative and negative join, 'gate' jargon, or a verdict announced before a colon",
+    "reader": "device 5 or 6: unearned uniqueness, talk about the document, unrequested draft metadata, or items joined with middle dots",
+    "shape": "device 2: the sentence is padding because minimising words state nothing",
+    "none": "none of these; the sentence states a fact about the work plainly, even when it uses one of the example words",
 }
 
 FENCE = re.compile(r"^\s*(```|~~~)")
@@ -296,7 +312,7 @@ def ask(items, model: str, key: str, timeout: float):
             "instructions": f"{target} Does the target have a voice problem? {STRICT}",
             "criteria": {
                 "problem": "the target has a voice problem under the standard",
-                "clean": "the target states its facts plainly or uses the wording meaningfully",
+                "clean": "the target reports a fact, constraint, instruction or note a reader acts on, including documentation labels and technical notes",
             },
         }
         questions[f"f{index}"] = {
