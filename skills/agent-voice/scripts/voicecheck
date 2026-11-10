@@ -49,7 +49,9 @@ PATTERNS: list[tuple[str, str, str]] = [
     ("minimizer", "subject", r"\b(?:just|simply|merely|little more than|nothing else)\b"),
     ("carry", "subject", r"\b(?:carry|carries|carried|carrying)\b"),
     ("name verb", "subject", r"\b(?:names|named|naming)\b|(?<!\A)\bname\b"),
-    ("component ownership", "subject", r"\b(?:own|owns|owning)\b|(?<!-)\bowned\b"),
+    # A possessive ("its own X", "BB's own") is not ownership language, so only the
+    # verb and a bare "own" ("own the plan") reach the decision call.
+    ("component ownership", "subject", r"\b(?:owns|owning)\b|(?<!-)\bowned\b|(?<!\bits )(?<!\btheir )(?<!\bour )(?<!\byour )(?<!\bhis )(?<!\bher )(?<!\bmy )(?<!'s )(?<!\u2019s )\bown\b"),
     ("state phrasing", "subject", r"\b(?:stay|stays|stayed|staying|remain|remains|remained|remaining|retain|retains|retained|retaining)\b"),
     ("says so", "reader", r"\b(?:say|says|said)\s+so\b"),
     ("passive voice", "subject", r"\b(?:am|is|are|was|were|be|been|being)\s+(?:(?:not|[a-z]+ly)\s+)?(?:[a-z]+ed|built|brought|done|given|held|kept|known|made|read|sent|shown|written)\b"),
@@ -89,15 +91,27 @@ DEVICES = (
     "carries a title', 'the heading names the project' where a plainer verb exists); a component that "
     "surfaces or exposes something a reader uses ('the panel surfaces errors') states what it does; "
     "8. component as actor: it makes a component the actor of a task or resource where the reader needs "
-    "the action ('the plugin owns deletion'); a classifier names a thing the reader needs ('a "
+    "the action ('the plugin owns deletion', 'each module owns its config'); 'its own X' or 'the host's own "
+    "X' is a possessive, not ownership, and is clean; a classifier names a thing the reader needs ('a "
     "plugin-owned route', 'workstream ownership'); an instruction that hands a person or an agent a task "
     "('Own the broad plan for large refactors', 'the worker owns the merge') names a real actor; "
-    "9. state in place of behaviour: it says a thing stays, remains or retains where the reader needs what "
-    "it does ('the core stays on loopback' for binds there, 'the browser context remains isolated' for what "
-    "keeps it apart); a stated constraint about where a reader may write data is the fact; "
-    "10. missing actor: it says a subject 'says so', or drops the actor a reader needs behind a passive "
-    "('the selectors are validated'); a passive that gives the actor and the step ('deletion is left to "
-    "the CLI') states a procedure; "
+    "9. state in place of behaviour: it says a component, record or value stays, remains, retains or keeps "
+    "something where the reader needs what it does ('the core stays on loopback' for binds there, 'the "
+    "browser context remains isolated' for what keeps it apart, 'the index retains old entries' for what "
+    "stores them and when it drops them, 'the lock remains held'); an accurate technical note worded this "
+    "way is still a violation; an active verb that says what a component does with data or controls "
+    "('the cache holds ten entries and evicts the oldest', 'the client exposes its retry settings') is "
+    "behaviour and is clean; an item staying in or leaving a list or queue by a membership rule, a "
+    "physical object staying where it is put, an instruction telling the reader or an agent to stay or "
+    "remain, and a stated constraint about where a reader may write data are clean; "
+    "10. missing actor: it says a subject 'says so', or hides behind a passive an actor that exists but goes "
+    "unnamed, where a program, service, check or person does the step and the sentence omits which ('the "
+    "selectors are validated', 'stale locks are cleared hourly', 'uploads are scanned'); an accurate "
+    "report of behaviour, a limit or an API rule worded this way is still a violation; a passive is clean "
+    "when the sentence names its actor ('deletion is left to the CLI', 'output is trimmed by the plugin'), "
+    "when its actor is the reader or user ('once the file is saved', 'when the flag is passed', 'unless a "
+    "key is set'), when it counts results ('one was skipped'), or when it describes a state rather than a "
+    "step ('the field is required'); "
     "11. formulaic join: it joins an affirmative and a negative claim as a set formula ('two items are not "
     "decisions but have to be settled'); "
     "12. jargon or verdict lead-in: it uses 'gate' or 'gated' for an approval or condition, or announces a "
@@ -115,10 +129,15 @@ DEVICES = (
 DECISION = (
     "The vocabulary in these examples never decides a case. A sentence whose job is to report — a "
     "constraint, an instruction, an attribute, an API note, an operational label, a count of what a run "
-    "produced — is clean, and the wording changes that only where the device names framing that hides the "
+    "produced — is clean under devices 1 to 7 and 11 to 13 unless the device names framing that hides the "
     "report; a count of what a run produced ('eight passed and one was skipped') is a report, not a "
-    "stance. Each device above states where its own boundary sits; apply that boundary, not the "
-    "vocabulary."
+    "stance. Devices 8, 9 and 10 judge how a report is worded, so being a correct report is no defence "
+    "there. For a passive, a state verb or ownership language, ask who or what performs the step. When "
+    "that actor is a program, service, component or person other than the reader and the sentence does "
+    "not name it, or when a component is said to own, keep or stay instead of what it does, the target "
+    "is a problem. When the sentence names the actor, the actor is the reader or user, or the sentence "
+    "hands a person or agent a task, it is clean. Each device above states where its own boundary sits; "
+    "apply that boundary, not the vocabulary."
 )
 
 STRICT = "Flag the target when the wording itself is the defect. " + DECISION
@@ -319,7 +338,7 @@ def ask(items, model: str, key: str, timeout: float):
             "instructions": f"{target} Does the target have a voice problem? {STRICT}",
             "criteria": {
                 "problem": "the target has a voice problem under the standard",
-                "clean": "the target reports a fact, constraint, instruction or note a reader acts on, including documentation labels and technical notes",
+                "clean": "the target reports a fact, constraint, instruction or note a reader acts on, and any passive, state verb or ownership word in it names its actor, has the reader as its actor, or hands a person a task",
             },
         }
         questions[f"f{index}"] = {
