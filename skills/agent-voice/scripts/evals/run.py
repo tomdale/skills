@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Score voicecheck against public Markdown paragraphs.
 
-The development corpus contains human-adjudicated labels collected with model
-judgments visible. Its sampling overrepresents some label groups, so its
-precision and recall do not estimate natural prevalence. The phrase pass
-selects candidates and the decision call scores them at or above the threshold.
+The development corpus holds single sentences sampled from public Markdown
+documents and labeled against the current SKILL.md. The sample is random within
+each document kind, so precision and recall do not estimate natural prevalence.
+The phrase pass selects candidates and the decision call scores them at or above
+the threshold.
 
 Each row's source URL pins a file at a commit. The evaluator downloads that file
 once into ~/.cache/voicecheck/corpus-sources and sends the model the sentences
@@ -23,6 +24,7 @@ import json
 import os
 import re
 import urllib.error
+import urllib.parse
 import urllib.request
 import sys
 import time
@@ -52,12 +54,13 @@ def fetch_source(source: str) -> str | None:
     match = RAW.match(source or "")
     if not match:
         return None
-    owner, repo, sha, path = match.groups()
+    owner, repo, sha, quoted = match.groups()
+    path = urllib.parse.unquote(quoted)
     cached = os.path.join(cache_dir(), owner, repo, sha, path)
     if os.path.exists(cached):
         with open(cached, encoding="utf-8") as f:
             return f.read()
-    url = f"https://raw.githubusercontent.com/{owner}/{repo}/{sha}/{path}"
+    url = f"https://raw.githubusercontent.com/{owner}/{repo}/{sha}/{urllib.parse.quote(path)}"
     try:
         with urllib.request.urlopen(url, timeout=30) as response:
             text = response.read().decode("utf-8")

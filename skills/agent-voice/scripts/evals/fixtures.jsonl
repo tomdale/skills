@@ -40,3 +40,4 @@
 {"sentence": "The payload makes its way to the build server after each commit.", "flag": 1, "why": "data motion"}
 {"sentence": "When the model pass runs, voicecheck sends these excerpts to AI Gateway.", "flag": 0, "why": "named sender"}
 {"sentence": "The request times out after 30 seconds.", "flag": 0, "why": "protocol term"}
+{"sentence": "Own the broad plan for large refactors and new implementations.", "flag": 0, "why": "agent given a task"}
