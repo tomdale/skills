@@ -4,7 +4,7 @@ The agent-voice skill describes the writing standard. `scripts/voicecheck` check
 
 Run `scripts/voicecheck draft.md` from this skill directory, pipe text to `scripts/voicecheck -`, or invoke `voicecheck` when the command is on PATH. Use `--json` for machine-readable output and `--selftest` to exercise the decision model against the fixtures.
 
-The phrase pass reads Markdown paragraphs, skips fenced code, and selects sentences with case-insensitive patterns. For each selected sentence, the model sees the target and bounded context from its heading, list introduction, previous paragraph, and current paragraph. Those excerpts leave the machine through AI Gateway when the model pass runs.
+The phrase pass reads Markdown paragraphs, skips fenced code, and selects sentences with case-insensitive patterns. For each selected sentence, the model sees the target and bounded context from its heading, list introduction, previous paragraph, and current paragraph. When the model pass runs, voicecheck sends these excerpts to AI Gateway.
 
 Every request includes a safety identifier, the token the gateway gives the provider to attribute a call to one end user. The default hashes the local account and hostname into `voicecheck-<hex>`; set `VOICECHECK_SAFETY_IDENTIFIER` to use one identity across machines.
 
