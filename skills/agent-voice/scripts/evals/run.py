@@ -37,14 +37,14 @@ def score_corpus(rows, key):
         ]
         answers, _ = vc.ask(items, vc.DEFAULT_MODEL, key, timeout=90)
         for index, row in enumerate(chunk):
-            gate = answers.get(f"g{index}") or {}
+            answer = answers.get(f"g{index}") or {}
             family = (answers.get(f"f{index}") or {}).get("choice") or "none"
             candidate = bool(vc.candidates(row["sentence"])[0])
             scored.append(
                 {
                     **row,
                     "candidate": candidate,
-                    "score": (gate.get("probabilities") or {}).get("problem", 0.0),
+                    "score": (answer.get("probabilities") or {}).get("problem", 0.0),
                     "family": family,
                 }
             )
@@ -136,7 +136,7 @@ def main(argv):
         hits = sum(1 for r in group if r["label"])
         reached = sum(1 for r in group if r["candidate"])
         print(f"  {stratum:9} {len(group):3} sentences, {hits:2} violations ({hits/len(group):.1%}), "
-              f"{reached:2} reach the gate ({reached/len(group):.0%})")
+              f"{reached:2} reach the decision call ({reached/len(group):.0%})")
     print(f"phrase pass reaches {candidate_recall:.0%} of the violations; decision mean score "
           f"{mean_pos:.2f} on violations and {mean_neg:.2f} on clean ({elapsed} ms)\n")
     print("A first pass wants recall, so read the curve at a low threshold and")

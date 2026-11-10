@@ -33,8 +33,8 @@ DEFAULT_THRESHOLD = 0.5
 DEFAULT_TOP = 10
 MAX_CANDIDATES = 24
 
-# One row per phrase worth naming. `family` is the problem the gate is asked
-# to confirm; the regex only has to be generous, because the gate decides.
+# One row per phrase worth naming. `family` describes the problem the decision
+# call confirms; the regex can be generous because the decision call decides.
 PATTERNS: list[tuple[str, str, str]] = [
     ("rather than", "claim", r"\brather than\b"),
     ("instead of", "claim", r"\binstead of\b"),
@@ -239,9 +239,8 @@ def candidates(text: str, exhaustive: bool = False):
     """Candidate sentences, and how many sentences were examined at all.
 
     Nothing is excluded. A quoted label, a component name and a sentence the
-    document marks as a bad example all still reach the gate, because the reader
-    of the report decides what to keep and a checker that hides cases takes that
-    decision away from them.
+    document marks as a bad example all still reach the decision call. The reader
+    of the report decides what to keep.
     """
     found = []
     examined = 0
@@ -257,7 +256,7 @@ def candidates(text: str, exhaustive: bool = False):
         if not hits and not exhaustive:
             continue
         if exhaustive and not hits:
-            # No phrase to report, so the sentence goes to the gate on its own
+            # A sentence without a phrase reaches the decision call on its own
             # merits. This is how a construction with no keyword — a passive or
             # actorless sentence — gets judged at all.
             hits = ["no phrase"]
@@ -266,7 +265,7 @@ def candidates(text: str, exhaustive: bool = False):
 
 
 def ask(items, model: str, key: str, timeout: float):
-    """One request: a strict problem/clean gate and a problem family per sentence."""
+    """One request returns a problem/clean decision and a problem family per sentence."""
     questions = {}
     for index, item in enumerate(items):
         context = item.get("context")
@@ -368,8 +367,8 @@ def selftest(model: str, key: str) -> int:
     elapsed_ms = int((time.monotonic() - started) * 1000)
     scored = []
     for index, case in enumerate(cases):
-        gate = answers.get(f"g{index}") or {}
-        score = (gate.get("probabilities") or {}).get("problem", 0.0)
+        answer = answers.get(f"g{index}") or {}
+        score = (answer.get("probabilities") or {}).get("problem", 0.0)
         scored.append((score, case["flag"], case["sentence"]))
     violations = [s for s in scored if s[1]]
     clean = [s for s in scored if not s[1]]
@@ -473,8 +472,8 @@ def main(argv: list[str]) -> int:
         findings = []
         unscored = []
         for index, item in enumerate(pending):
-            gate = answers.get(f"g{index}") or {}
-            probabilities = gate.get("probabilities") or {}
+            answer = answers.get(f"g{index}") or {}
+            probabilities = answer.get("probabilities") or {}
             score = probabilities.get("problem")
             if isinstance(score, bool) or not isinstance(score, (int, float)) or not 0 <= score <= 1:
                 unscored.append(item)
