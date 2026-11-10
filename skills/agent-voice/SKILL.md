@@ -53,6 +53,8 @@ are acceptable when their meaning is clear.
 | "names" for a field, header, variable | says, shows, gives, calls it |
 | "X becomes Y" for rendering | the renderer draws X as Y |
 | "leverages", "utilises" | uses |
+| "gated on" a check, a review, a flag | the condition it waits for, the person who decides |
+| "X survives" for a fact that still holds | what the code, test or command does |
 
 - Wrong: `What it carries: a subject, an optional file path, and a sentence of background.`
 - Right: `Its fields are a subject, an optional file path, and a sentence of background.`
@@ -62,6 +64,11 @@ are acceptable when their meaning is clear.
 - Right: `Today the text prints "Evidence: observed" for the field that holds the certainty.`
 - Wrong: `A supporting group becomes one panel with its children as rows inside it.`
 - Right: `The renderer draws a supporting group as one panel, its children as rows.`
+- Wrong: `The launch is gated on approval.`
+- Right: `A person approves the launch before it starts.`
+
+Where a test, a step, or publication waits for something, name the person or the
+condition it waits for. Keep "gate" for a fence or a door you can open.
 
 Delete openers whose job is to announce importance: "It's worth noting",
 "Importantly", "Crucially", "At a high level", "In essence", "Fundamentally".
@@ -130,7 +137,8 @@ subject followed by "says so"; identify the actual message or behavior.
 ## One claim per sentence
 
 State the claim. A correction of an objection nobody raised is not a fact, and a
-bold noun phrase ending in a period is a heading pretending to be a sentence. Do
+bold noun phrase ending in a period is a heading pretending to be a sentence. A
+clause that announces its verdict and stops at a colon is that same heading. Do
 not open a section by repeating its heading. Flag passive voice and name the
 actor where it can be identified. State the behavior positively when a negative
 adds no necessary distinction. Keep safety warnings and other facts the reader
@@ -142,6 +150,8 @@ needs when rewriting an "X, not Y" contrast.
 - Right: `Steps sit on a numbered rail, one circle per step.`
 - Wrong: `**The one question.** Does a reply read as carefully made as the recap card?`
 - Right: `A reply deserves as much care as the recap card that ends a turn.`
+- Wrong: `The result holds: five tests passed.`
+- Right: `Five tests passed.`
 
 Where a wrong reading would cost the reader something, give the assumption first
 and the fact after it: "Auto-repeat re-runs the handler; it re-registers on every
@@ -169,6 +179,13 @@ recommendation.
 to use them" and "this section describes" spend words telling the reader about
 the page they are already looking at. Describe structure where a person could
 not find a part without help.
+
+A status, date, author, owner, or version line about the draft itself appears
+when a person asks for it. Write items as prose instead of joining them with
+middle dots.
+
+- Wrong: `Status: draft · three tests · four files`
+- Right: `The draft covers three tests across four files.`
 
 "the one", "the only", "the most important thing", "the whole point" and "never",
 "always" and "ever" used for emphasis claim a set has one member. Show the set or
@@ -233,12 +250,14 @@ in several passes than in one rewrite.
    keep their words. Then read for what no checker sees: whether two sentences
    in a row share a shape, whether a paragraph is about the document, and
    whether the hard part of the subject got the long sentence.
-3. Read the first sentence of every paragraph. If it is a bold fragment, a claim
-   about the document, or an "It is …", rewrite it to name the thing that acts.
+3. Read the first sentence of every paragraph. If it is a bold or italic
+   fragment, a claim about the document, or an "It is …", rewrite it to name the
+   thing that acts.
 4. The sentence that explains a rule pays the most in a document, and the
    statements below apply to every sentence whether or not a checker flags it.
 
 The standard's phrase list includes `rather than`, `instead of`, `X, not Y`,
 `carry`, unusual `name` verbs, a component `owns`, `stay`, `remain`, `retain`,
-`says so`, passive constructions, `actually`, `evidence`, `observed`, `finding`,
+`gate`, `gated`, `survives`, draft bylines, middle dots, `says so`, passive
+constructions, `actually`, `evidence`, `observed`, `finding`,
 `inferred`, `certainty`, `honest`, `candid`, `frank`, and `transparent`.

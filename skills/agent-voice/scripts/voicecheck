@@ -40,7 +40,8 @@ PATTERNS: list[tuple[str, str, str]] = [
     ("instead of", "claim", r"\binstead of\b"),
     ("not X but Y", "claim", r"\bnot\s+\w+[,;]?\s+but\b"),
     ("X, not Y", "claim", r",\s+not\s+\w+"),
-    ("bold fragment", "claim", r"(?m)^\s*\*\*[^*\n]{3,80}[.:]\*\*\s*$"),
+    ("bold fragment", "claim", r"(?m)^\s*\*\*[^*\n]{3,80}[.:]"),
+    ("emphasis lead-in", "claim", r"(?m)(?:^|\s)(?:\*\*|__|\*|_)[^\n*_]{3,80}(?:\*\*|__|\*|_)\s*:"),
     ("gets no X at all", "subject", r"\bgets?\s+(?:no|nothing)\b[^.!?\n]{0,60}\bat all\b"),
     ("nothing but", "subject", r"\bnothing\s+but\b|\bnothing\s+(?:tying|marking|holding|linking)\b"),
     ("minimizer", "subject", r"\b(?:just|simply|merely|little more than|nothing else)\b"),
@@ -51,6 +52,8 @@ PATTERNS: list[tuple[str, str, str]] = [
     ("says so", "reader", r"\b(?:say|says|said)\s+so\b"),
     ("passive voice", "subject", r"\b(?:am|is|are|was|were|be|been|being)\s+(?:(?:not|[a-z]+ly)\s+)?(?:[a-z]+ed|built|brought|done|given|held|kept|known|made|read|sent|shown|written)\b"),
     ("abstract verb", "subject", r"\b(?:becomes|leverages|utilises|utilizes)\s+(?:a|an|the|one|its)\b"),
+    ("gating word", "subject", r"\bgat(?:e|es|ed|ing)\b"),
+    ("verdict verb", "subject", r"\b(?:survives?|survived|surviving|(?:still )?holds|(?:still )?stands)\b[^.!?\n]{0,60}:"),
     ("ascribed intent", "subject", r"\b(?:deliberately|intentionally)\s+(?:quieter|louder|softer|brighter|darker|calmer|more|less)\b|\b(?:quieter|louder|softer|brighter|darker)\s+(?:on purpose|by design)\b"),
     ("evidence framing", "writer", r"\b(?:evidence|findings?|observations?|observed|inferred|proves?|proven|certainty|corroborat\w+)\b"),
     ("candor grading", "writer", r"\b(?:honest\w*|candid\w*|frankly|transparent\w*)\b"),
@@ -60,6 +63,8 @@ PATTERNS: list[tuple[str, str, str]] = [
     ("absolute", "reader", r"\bthe only\s+\w+\s+that\b|\bthe most important\b|\bthe whole point\b|\bthe one (?:real|thing|row|question|place|part)\b"),
     ("document tour", "reader", r"\b(?:this page|this section|this document|the section below|listed below|at the top|as follows|the rest of this)\b"),
     ("importance opener", "shape", r"\b(?:it'?s worth noting|importantly|crucially|needless to say)\b"),
+    ("mid-dot chain", "reader", r"[·•]"),
+    ("draft byline", "reader", r"(?m)^(?:status|draft|version|author|owner|last updated|date|revision)\s*:"),
 ]
 
 DEVICES = (
@@ -71,7 +76,8 @@ DEVICES = (
     "'honest caveats', 'I cannot yet name it'); "
     "5. it asserts unearned importance or uniqueness ('the most important thing', 'the only row that', "
     "'the whole point'); "
-    "6. it talks about the document instead of the subject ('this page shows', 'listed below'); "
+    "6. it talks about the document instead of the subject ('this page shows', 'listed below'), or adds "
+    "unrequested draft metadata or middle-dot chains; "
     "7. it uses an abstract verb where a plain one exists ('carries a title', 'names the field', "
     "'becomes a panel'); "
     "8. it uses carry except for physical transport, uses name unusually as a verb, or says a software "
@@ -79,7 +85,9 @@ DEVICES = (
     "9. it describes an object staying or remaining a trait or place, or retaining data; "
     "10. it says a subject says so, uses passive or ambiguous actorless language, or gives non-actionable "
     "meta-narrative; "
-    "11. it joins unrelated affirmative and negative claims into a formulaic sentence. "
+    "11. it joins unrelated affirmative and negative claims into a formulaic sentence; "
+    "12. it uses gate or gated as jargon for an approval or condition, or announces a verdict before "
+    "a colon instead of stating its support. "
     "Keep factual technical constraints and necessary safety information. Allow deliberately for real "
     "design choices. Allow surface and expose when clear. Allow literal physical carrying and ordinary "
     "literal naming."
@@ -115,8 +123,8 @@ FIXES = {
 CRITERIA = {
     "subject": "the sentence hides an actor in passive or ambiguous prose, attributes ownership to a software component, uses nonliteral carry or an unusual name verb, or describes a trait or place with stay, remain, or retain",
     "writer": "the sentence frames facts as evidence or observed, or centers the writer's confidence, candor, or impression",
-    "claim": "the sentence corrects an objection nobody raised, uses a formulaic X-not-Y contrast, or dresses a fragment as a heading; keep meaningful safety warnings",
-    "reader": "the sentence asserts unearned importance or tours the document; allow factual bounds such as only or always for technical constraints, and flag a subject saying so",
+    "claim": "the sentence corrects an objection nobody raised, uses a formulaic X-not-Y contrast, dresses a fragment as a heading, or announces a verdict before a colon; keep meaningful safety warnings",
+    "reader": "the sentence asserts unearned importance, tours the document, adds unrequested draft metadata, or joins items with middle dots; allow factual technical bounds and flag a subject saying so",
     "shape": "the sentence adds padding, a non-actionable aside, or an unrelated affirmative and negative clause joined together",
     "none": "none of these; the sentence states a fact about the work plainly",
 }
@@ -197,14 +205,14 @@ def contextual_units(text: str):
             previous = list_intro = ""
             previous_was_list = False
             if paragraph:
-                yield start, paragraph, block, ""
+                yield start, paragraph, block, "", True
             continue
         is_list = bool(re.match(r"^\s*(?:[-*+]\s|\d+[.)]\s)", block))
         if is_list and not previous_was_list:
             list_intro = previous if previous.endswith(":") else ""
         elif not is_list:
             list_intro = ""
-        for piece in sentences(block):
+        for position_in_block, piece in enumerate(sentences(block)):
             position = paragraph.find(piece)
             offset = max(0, position - 400) if position >= 0 else 0
             excerpt = paragraph[offset : offset + 2000]
@@ -216,14 +224,14 @@ def contextual_units(text: str):
                     f"Paragraph: {excerpt}",
                 ) if part
             )
-            yield start, piece, block, context
+            yield start, piece, block, context, position_in_block == 0
         previous = paragraph
         previous_was_list = is_list
 
 
 def units(text: str):
     """Yield (line, sentence) for prose only, one unit per sentence."""
-    for line, sentence, _, _ in contextual_units(text):
+    for line, sentence, _, _, _ in contextual_units(text):
         yield line, sentence
 
 
@@ -237,12 +245,15 @@ def candidates(text: str, exhaustive: bool = False):
     """
     found = []
     examined = 0
-    for index, (line, sentence, block, context) in enumerate(contextual_units(text)):
+    for index, (line, sentence, block, context, first) in enumerate(contextual_units(text)):
         examined += 1
-        hits = [
-            name for name, _, pattern in PATTERNS
-            if re.search(pattern, block if name == "bold fragment" else sentence, re.IGNORECASE)
-        ]
+        hits = []
+        for name, _, pattern in PATTERNS:
+            block_pattern = name in ("bold fragment", "emphasis lead-in")
+            if block_pattern and not first:
+                continue
+            if re.search(pattern, block if block_pattern else sentence, re.IGNORECASE):
+                hits.append(name)
         if not hits and not exhaustive:
             continue
         if exhaustive and not hits:

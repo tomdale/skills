@@ -4,7 +4,7 @@
 The development corpus contains human-adjudicated labels collected with model
 judgments visible. Its sampling overrepresents some label groups, so its
 precision and recall do not estimate natural prevalence. The phrase pass
-selects candidates and the decision gate scores them at or above the threshold.
+selects candidates and the decision call scores them at or above the threshold.
 
     ./run.py                # sweep thresholds, report the best
     ./run.py --threshold 0.5
@@ -137,7 +137,7 @@ def main(argv):
         reached = sum(1 for r in group if r["candidate"])
         print(f"  {stratum:9} {len(group):3} sentences, {hits:2} violations ({hits/len(group):.1%}), "
               f"{reached:2} reach the gate ({reached/len(group):.0%})")
-    print(f"phrase pass reaches {candidate_recall:.0%} of the violations; gate mean score "
+    print(f"phrase pass reaches {candidate_recall:.0%} of the violations; decision mean score "
           f"{mean_pos:.2f} on violations and {mean_neg:.2f} on clean ({elapsed} ms)\n")
     print("A first pass wants recall, so read the curve at a low threshold and")
     print("check that the shortlist stays trustworthy as you go down it.\n")

@@ -27,3 +27,11 @@
 {"sentence": "The panel surfaces errors.", "flag": 0, "why": "clear technical verb"}
 {"sentence": "The only plugin-owned route is a navPanel.", "flag": 0, "why": "factual bound"}
 {"sentence": "Deletion is deliberately left to the CLI after stopping agents.", "flag": 0, "why": "design decision"}
+{"sentence": "Include it in handoffs so publication stays gated on user review.", "flag": 1, "why": "gating word"}
+{"sentence": "Close the garden gate before the dog gets out.", "flag": 0, "why": "literal gate"}
+{"sentence": "The literal sense survives: the model pass cleared one sentence and flagged the other.", "flag": 1, "why": "verdict verb"}
+{"sentence": "The model pass cleared the closing sentence at 0.03 and flagged the review sentence at 0.99.", "flag": 0, "why": "plain measurement"}
+{"sentence": "The rule holds: eight tests pass and one is skipped.", "flag": 1, "why": "colon lead-in"}
+{"sentence": "Status: first draft · 2026-11-09", "flag": 1, "why": "draft byline"}
+{"sentence": "The scope covers Code Reviews · Security Reviews · Investigations.", "flag": 1, "why": "mid-dot chain"}
+{"sentence": "The scope covers Code Reviews, Security Reviews and Investigations.", "flag": 0, "why": "plain list"}

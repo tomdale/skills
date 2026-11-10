@@ -8,7 +8,7 @@ The phrase pass reads Markdown paragraphs, skips fenced code, and selects senten
 
 The default model is `openai/gpt-6-luna-decisions`. It returns a problem probability and a problem family. The threshold defaults to 0.5. Findings are ranked by probability and a phrase-reliability heuristic from an earlier audit. The displayed confidence is the model's probability, not a calibrated correctness rate. There is no separate reasoning-model pass.
 
-Treat a model result as a prompt to inspect the sentence. The gate can flag factual bounds or intentional design choices despite the allowances in its instructions. When the model fails or omits a score, the command reports the unscored sentence as a phrase candidate with confidence 0.0. Without `AI_GATEWAY_API_KEY`, the command uses the phrase pass and prints a warning to stderr. `--no-model` requests that pass explicitly.
+Treat a model result as a prompt to inspect the sentence. The decision call can flag factual bounds or intentional design choices despite the allowances in its instructions. When the model fails or omits a score, the command reports the unscored sentence as a phrase candidate with confidence 0.0. Without `AI_GATEWAY_API_KEY`, the command uses the phrase pass and prints a warning to stderr. `--no-model` requests that pass explicitly.
 
 The default model pass scores at most 24 phrase candidates. `--max-candidates N` changes that limit; additional candidates use the phrase pass. Requests contain at most 24 sentences each. `--exhaustive` scores every sentence and ignores the candidate limit. With `--no-model --exhaustive`, every sentence is reported as a candidate.
 

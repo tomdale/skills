@@ -26,6 +26,10 @@ class CandidateTests(unittest.TestCase):
             "The selectors are validated.": "passive voice",
             "The runner accepts a source, not a destination.": "X, not Y",
             "Observed: version 1.": "evidence framing",
+            "The release is gated on approval.": "gating word",
+            "The rule holds: eight tests pass.": "verdict verb",
+            "Status: first draft.": "draft byline",
+            "The list uses Alpha · Beta.": "mid-dot chain",
         }
         for sentence, expected in cases.items():
             with self.subTest(sentence=sentence):
@@ -52,6 +56,11 @@ class CandidateTests(unittest.TestCase):
         self.assertIn("Heading: Settings", found[0]["context"])
         self.assertIn("List introduction: The program handles:", found[0]["context"])
         self.assertIn("bold fragment", found[1]["matched"])
+
+    def test_emphasis_lead_in_only_applies_to_the_opening_sentence(self):
+        found, _ = vc.candidates("**Result**: The panel carries a label. The page says so.")
+        self.assertIn("emphasis lead-in", found[0]["matched"])
+        self.assertNotIn("emphasis lead-in", found[1]["matched"])
 
     def test_context_is_bounded_and_contains_nearby_text(self):
         text = "A" * 5000 + ". The page says so. " + "B" * 5000
