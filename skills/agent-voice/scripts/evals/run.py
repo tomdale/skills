@@ -6,15 +6,24 @@ judgments visible. Its sampling overrepresents some label groups, so its
 precision and recall do not estimate natural prevalence. The phrase pass
 selects candidates and the decision call scores them at or above the threshold.
 
-    ./run.py                # sweep thresholds, report the best
+Each row's source URL pins a file at a commit. The evaluator downloads that file
+once into ~/.cache/voicecheck/corpus-sources and sends the model the sentences
+and context voicecheck itself would build from it. Rows without a loadable
+source use the context stored in the row.
+
+    ./run.py                   # sweep thresholds, report the best
     ./run.py --threshold 0.5
     ./run.py --json
+    ./run.py --stored-context  # use each row's stored context instead
 """
 
 from __future__ import annotations
 
 import json
 import os
+import re
+import urllib.error
+import urllib.request
 import sys
 import time
 from importlib.machinery import SourceFileLoader
@@ -27,27 +36,110 @@ SWEEP = (0.2, 0.3, 0.4, 0.5, 0.6, 0.7)
 CHUNK = 20
 
 
-def score_corpus(rows, key):
-    scored = []
-    for start in range(0, len(rows), CHUNK):
-        chunk = rows[start : start + CHUNK]
-        items = [
-            {"offset": i, "line": i + 1, "sentence": row["sentence"], "matched": ["corpus"], "context": row.get("context", "")}
-            for i, row in enumerate(chunk)
+RAW = re.compile(r"https://github\.com/([^/]+)/([^/]+)/blob/([0-9a-f]{7,40})/([^#]+)")
+
+
+def cache_dir() -> str:
+    base = os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache")
+    return os.path.join(base, "voicecheck", "corpus-sources")
+
+
+def fetch_source(source: str) -> str | None:
+    """The document a row came from, at the commit its URL pins, or None.
+
+    A pinned file never changes, so a cached copy is reused without checking.
+    """
+    match = RAW.match(source or "")
+    if not match:
+        return None
+    owner, repo, sha, path = match.groups()
+    cached = os.path.join(cache_dir(), owner, repo, sha, path)
+    if os.path.exists(cached):
+        with open(cached, encoding="utf-8") as f:
+            return f.read()
+    url = f"https://raw.githubusercontent.com/{owner}/{repo}/{sha}/{path}"
+    try:
+        with urllib.request.urlopen(url, timeout=30) as response:
+            text = response.read().decode("utf-8")
+    except (urllib.error.URLError, TimeoutError, UnicodeDecodeError):
+        return None
+    os.makedirs(os.path.dirname(cached), exist_ok=True)
+    with open(cached, "w", encoding="utf-8") as f:
+        f.write(text)
+    return text
+
+
+def _norm(text: str) -> str:
+    return re.sub(r"\s+", " ", vc.plain(text)).strip().lower()
+
+
+def tool_units(row, documents):
+    """The sentences voicecheck would score for this row, with the context it would send.
+
+    A row can hold more than one sentence; voicecheck scores each separately, so
+    each becomes a unit and the row takes the highest score. A row whose source
+    cannot be loaded, or whose text is not found in it, falls back to its stored
+    context, and the second value reports which happened.
+    """
+    text = documents.get(row.get("source", "").split("#")[0])
+    if text is not None:
+        wanted = _norm(row["sentence"])
+        units = [
+            {"sentence": sentence, "context": context, "matched": _matches(sentence, block, first)}
+            for _, sentence, block, context, first in vc.contextual_units(text)
+            if _norm(sentence) and _norm(sentence) in wanted and wanted[:60] in _norm(block)
         ]
-        answers, _ = vc.ask(items, vc.DEFAULT_MODEL, key, timeout=90)
-        for index, row in enumerate(chunk):
+        if units:
+            return units, True
+    return [{"sentence": row["sentence"], "context": row.get("context", ""), "matched": _matches(row["sentence"], row["sentence"], True)}], False
+
+
+def _matches(sentence, block, first):
+    found, _ = vc.candidates(sentence)
+    hits = list(found[0]["matched"]) if found else []
+    if first:
+        for name, _, pattern in vc.PATTERNS:
+            if name in ("bold fragment", "emphasis lead-in") and re.search(pattern, block, re.IGNORECASE) and name not in hits:
+                hits.append(name)
+    return hits
+
+
+def score_corpus(rows, key, stored_context=False):
+    documents = {}
+    if not stored_context:
+        for source in {r.get("source", "").split("#")[0] for r in rows}:
+            text = fetch_source(source)
+            if text is not None:
+                documents[source] = text
+    expanded = [tool_units(row, documents) for row in rows]
+    items = [unit for units, _ in expanded for unit in units]
+    scores = []
+    for start in range(0, len(items), CHUNK):
+        chunk = items[start : start + CHUNK]
+        answers, _ = vc.ask(
+            [{"offset": i, "line": i + 1, "sentence": u["sentence"], "matched": ["corpus"], "context": u["context"]} for i, u in enumerate(chunk)],
+            vc.DEFAULT_MODEL, key, timeout=90,
+        )
+        for index in range(len(chunk)):
             answer = answers.get(f"g{index}") or {}
-            family = (answers.get(f"f{index}") or {}).get("choice") or "none"
-            candidate = bool(vc.candidates(row["sentence"])[0])
-            scored.append(
-                {
-                    **row,
-                    "candidate": candidate,
-                    "score": (answer.get("probabilities") or {}).get("problem", 0.0),
-                    "family": family,
-                }
-            )
+            scores.append(((answer.get("probabilities") or {}).get("problem", 0.0), (answers.get(f"f{index}") or {}).get("choice") or "none"))
+    scored = []
+    position = 0
+    for row, (units, from_source) in zip(rows, expanded):
+        unit_scores = scores[position : position + len(units)]
+        position += len(units)
+        # The row counts as reported when any of its sentences would be: a phrase
+        # match selected it and its decision score crosses the threshold.
+        reported = [s for u, s in zip(units, unit_scores) if u["matched"]]
+        best = max(reported or unit_scores, key=lambda s: s[0])
+        scored.append({
+            **row,
+            "candidate": bool(reported),
+            "matched": sorted({m for u in units for m in u["matched"]}),
+            "score": best[0],
+            "family": best[1],
+            "fromSource": from_source,
+        })
     return scored
 
 
@@ -84,6 +176,7 @@ def main(argv):
     if "--threshold" in argv:
         threshold = float(argv[argv.index("--threshold") + 1])
     path = os.path.join(HERE, "corpus.jsonl")
+    stored_context = "--stored-context" in argv
     if "--corpus" in argv:
         path = argv[argv.index("--corpus") + 1]
     try:
@@ -102,7 +195,7 @@ def main(argv):
         return 2
 
     started = time.monotonic()
-    scored = score_corpus(rows, key)
+    scored = score_corpus(rows, key, stored_context)
     elapsed = int((time.monotonic() - started) * 1000)
 
     results = [confusion(scored, t)[0] for t in ([threshold] if threshold is not None else SWEEP)]
@@ -125,9 +218,12 @@ def main(argv):
             "meanScoreNegatives": round(mean_neg, 3),
             "elapsedMs": elapsed,
             "model": vc.DEFAULT_MODEL,
+            "rowsFromSource": sum(1 for r in scored if r["fromSource"]),
         }, indent=2))
         return 0
 
+    rebuilt = sum(1 for r in scored if r["fromSource"])
+    print(f"context: {rebuilt} of {len(scored)} rows rebuilt from their pinned source, {len(scored) - rebuilt} use stored context")
     print(f"{len(scored)} sentences: {len(positives)} violations ({len(positives)/len(scored):.1%}), {len(negatives)} clean")
     for stratum in strata:
         group = [r for r in scored if r.get("stratum", "all") == stratum]

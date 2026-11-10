@@ -110,6 +110,23 @@ class EvaluatorTests(unittest.TestCase):
         self.assertEqual(result, 0)
         self.assertIn("0.00", out.getvalue())
 
+    def test_row_context_comes_from_its_pinned_source(self):
+        source = "https://github.com/o/r/blob/abc1234/README.md"
+        document = "# Setup\n\nInstall the tool first.\n\nThe page says so. Then run it.\n"
+        row = {"sentence": "The page says so. Then run it.", "label": 1, "source": source + "#L5", "context": "stale"}
+        units, from_source = self.evaluator.tool_units(row, {source: document})
+        self.assertTrue(from_source)
+        self.assertEqual([u["sentence"] for u in units], ["The page says so.", "Then run it."])
+        self.assertIn("Previous paragraph: Install the tool first.", units[0]["context"])
+        self.assertIn("says so", units[0]["matched"])
+        self.assertEqual(units[1]["matched"], [])
+
+    def test_row_without_source_keeps_stored_context(self):
+        row = {"sentence": "The page says so.", "label": 1, "context": "heading: Notes"}
+        units, from_source = self.evaluator.tool_units(row, {})
+        self.assertFalse(from_source)
+        self.assertEqual(units[0]["context"], "heading: Notes")
+
     def test_empty_corpus_fails_cleanly(self):
         with tempfile.NamedTemporaryFile() as f, contextlib.redirect_stderr(io.StringIO()):
             self.assertEqual(self.evaluator.main(["--corpus", f.name]), 2)
