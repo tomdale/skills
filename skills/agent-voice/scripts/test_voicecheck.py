@@ -136,6 +136,30 @@ class GatewayTests(unittest.TestCase):
             result = vc.main(["voicecheck", "--json", "--all", *args])
         return result, json.loads(out.getvalue()), err.getvalue()
 
+    def test_request_names_an_end_user(self):
+        response = mock.MagicMock()
+        response.__enter__.return_value.read.return_value = b'{"answers": {}}'
+        item = {"sentence": "The page says so.", "context": ""}
+        with mock.patch.dict(os.environ, {"USER": "someone", "VOICECHECK_SAFETY_IDENTIFIER": ""}), \
+             mock.patch.object(vc.urllib.request, "urlopen", return_value=response) as urlopen:
+            vc.ask([item], "example/model", "test-key", 3)
+            vc.ask([item], "example/model", "test-key", 3)
+        bodies = [json.loads(call.args[0].data) for call in urlopen.call_args_list]
+        identifier = bodies[0]["providerOptions"]["gateway"]["safetyIdentifier"]
+        self.assertTrue(identifier)
+        self.assertEqual(identifier, bodies[1]["providerOptions"]["gateway"]["safetyIdentifier"])
+        self.assertNotIn("someone", identifier)
+        self.assertNotEqual(identifier, vc.DEFAULT_MODEL)
+
+    def test_configured_end_user_wins(self):
+        response = mock.MagicMock()
+        response.__enter__.return_value.read.return_value = b'{"answers": {}}'
+        with mock.patch.dict(os.environ, {"VOICECHECK_SAFETY_IDENTIFIER": "shared-identity"}), \
+             mock.patch.object(vc.urllib.request, "urlopen", return_value=response) as urlopen:
+            vc.ask([{"sentence": "The page says so.", "context": ""}], "example/model", "k", 3)
+        body = json.loads(urlopen.call_args.args[0].data)
+        self.assertEqual(body["providerOptions"]["gateway"]["safetyIdentifier"], "shared-identity")
+
     def test_selftest_sends_the_requested_model(self):
         fixture_path = os.path.join(os.path.dirname(__file__), "evals", "fixtures.jsonl")
         with open(fixture_path, encoding="utf-8") as f:

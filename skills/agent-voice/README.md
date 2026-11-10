@@ -6,6 +6,8 @@ Run `scripts/voicecheck draft.md` from this skill directory, pipe text to `scrip
 
 The phrase pass reads Markdown paragraphs, skips fenced code, and selects sentences with case-insensitive patterns. For each selected sentence, the model sees the target and bounded context from its heading, list introduction, previous paragraph, and current paragraph. Those excerpts leave the machine through AI Gateway when the model pass runs.
 
+Every request includes a safety identifier, the token the gateway gives the provider to attribute a call to one end user. The default hashes the local account and hostname into `voicecheck-<hex>`; set `VOICECHECK_SAFETY_IDENTIFIER` to use one identity across machines.
+
 The default model is `openai/gpt-6-luna-decisions`. It returns a problem probability and a problem family. The threshold defaults to 0.5. Findings are ranked by probability and a phrase-reliability heuristic from an earlier audit. The displayed confidence is the model's probability, not a calibrated correctness rate. There is no separate reasoning-model pass.
 
 Treat a model result as a prompt to inspect the sentence. The decision call can flag factual bounds or intentional design choices despite the allowances in its instructions. When the model fails or omits a score, the command reports the unscored sentence as a phrase candidate with confidence 0.0. Without `AI_GATEWAY_API_KEY`, the command uses the phrase pass and prints a warning to stderr. `--no-model` requests that pass explicitly.
