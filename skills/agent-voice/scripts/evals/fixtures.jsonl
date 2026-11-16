@@ -41,3 +41,5 @@
 {"sentence": "When the model pass runs, voicecheck sends these excerpts to AI Gateway.", "flag": 0, "why": "named sender"}
 {"sentence": "The request times out after 30 seconds.", "flag": 0, "why": "protocol term"}
 {"sentence": "Own the broad plan for large refactors and new implementations.", "flag": 0, "why": "agent given a task"}
+{"sentence": "A 503 from the license server during startup read as an expired key.", "flag": 1, "why": "read as"}
+{"sentence": "The loader treated a 503 from the license server during startup as an expired key.", "flag": 0, "why": "named actor"}

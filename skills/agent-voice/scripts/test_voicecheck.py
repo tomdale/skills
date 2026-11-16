@@ -32,6 +32,9 @@ class CandidateTests(unittest.TestCase):
             "The list uses Alpha · Beta.": "mid-dot chain",
             "Those excerpts leave the machine through AI Gateway.": "data motion",
             "Your keys never travel off the device.": "data motion",
+            "A rate limit during the recheck read as \"outside the directories\".": "read as",
+            "A timeout was read as a denial.": "read as",
+            "The density reads as heavy.": "vibe word",
         }
         for sentence, expected in cases.items():
             with self.subTest(sentence=sentence):

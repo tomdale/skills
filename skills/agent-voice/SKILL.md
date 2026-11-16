@@ -52,6 +52,7 @@ are acceptable when their meaning is clear.
 | "carries" for data, fields, payloads | holds, has, contains, shows |
 | "names" for a field, header, variable | says, shows, gives, calls it |
 | "X becomes Y" for rendering | the renderer draws X as Y |
+| "X read as Y" for a program's verdict | the check treated X as Y, the parser classified X as Y |
 | "leverages", "utilises" | uses |
 | "gated on" a check, a review, a flag | the condition it waits for, the person who decides |
 | "X survives" for a fact that still holds | what the code, test or command does |
@@ -66,6 +67,8 @@ are acceptable when their meaning is clear.
 - Right: `The renderer draws a supporting group as one panel, its children as rows.`
 - Wrong: `The launch is gated on approval.`
 - Right: `A person approves the launch before it starts.`
+- Wrong: `A GitHub rate limit or 5xx during the approval-time recheck read as "outside the directories".`
+- Right: `The approval-time recheck treated a GitHub rate limit or 5xx as "outside the directories".`
 
 Where a test, a step, or publication waits for something, name the person or the
 condition it waits for. Keep "gate" for a fence or a door you can open.
@@ -259,5 +262,6 @@ in several passes than in one rewrite.
 The standard's phrase list includes `rather than`, `instead of`, `X, not Y`,
 `carry`, unusual `name` verbs, a component `owns`, `stay`, `remain`, `retain`,
 `gate`, `gated`, `survives`, draft bylines, middle dots, `says so`, passive
-constructions, `actually`, `evidence`, `observed`, `finding`,
-`inferred`, `certainty`, `honest`, `candid`, `frank`, and `transparent`.
+constructions, `read as` for a program's verdict, `actually`, `evidence`,
+`observed`, `finding`, `inferred`, `certainty`, `honest`, `candid`, `frank`, and
+`transparent`.
