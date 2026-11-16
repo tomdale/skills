@@ -55,9 +55,9 @@ PATTERNS: list[tuple[str, str, str]] = [
     ("state phrasing", "subject", r"\b(?:stay|stays|stayed|staying|remain|remains|remained|remaining|retain|retains|retained|retaining)\b"),
     ("says so", "reader", r"\b(?:say|says|said)\s+so\b"),
     ("passive voice", "subject", r"\b(?:am|is|are|was|were|be|been|being)\s+(?:(?:not|[a-z]+ly)\s+)?(?:[a-z]+ed|built|brought|done|given|held|kept|known|made|read|sent|shown|written)\b"),
-    # "read as" is a program's verdict with the program left out. "reads as" is the
-    # writer's impression and is matched by "vibe word".
-    ("read as", "subject", r"\bread\s+as\b"),
+    # "X read as Y" in any tense: the sentence gives a reading or a verdict and
+    # leaves out who or what did the reading.
+    ("read as", "subject", r"\breads?\s+as\b"),
     ("abstract verb", "subject", r"\b(?:becomes|leverages|utilises|utilizes)\s+(?:a|an|the|one|its)\b"),
     ("data motion", "subject", r"\b(?:leaves?|leaving|left)\s+(?:the|your|this|its)\s+(?:machine|device|computer|laptop|network|browser|host|process)\b|\b(?:travels?|travell?ed|travell?ing|flows?|flowed|flowing)\b|\bmakes?\s+(?:its|their)\s+way\b|\b(?:ends?|ended)\s+up\s+(?:in|on|at)\b"),
     ("gating word", "subject", r"\bgat(?:e|es|ed|ing)\b"),
@@ -66,7 +66,7 @@ PATTERNS: list[tuple[str, str, str]] = [
     ("evidence framing", "writer", r"\b(?:evidence|findings?|observations?|observed|inferred|proves?|proven|certainty|corroborat\w+)\b"),
     ("candor grading", "writer", r"\b(?:honest\w*|candid\w*|frankly|transparent\w*)\b"),
     ("performed doubt", "writer", r"\b(?:somewhere in|hard to say|not 100% sure|cannot yet|can'?t yet|not sure exactly)\b"),
-    ("vibe word", "writer", r"\b(?:reads as|feels like|actually|genuinely)\b"),
+    ("vibe word", "writer", r"\b(?:feels like|actually|genuinely)\b"),
     ("em-dash aside", "writer", r"—[^—\n]{40,}—"),
     ("absolute", "reader", r"\bthe only\s+\w+\s+that\b|\bthe most important\b|\bthe whole point\b|\bthe one (?:real|thing|row|question|place|part)\b"),
     ("document tour", "reader", r"\b(?:this page|this section|this document|the section below|listed below|at the top|as follows|the rest of this)\b"),
@@ -152,6 +152,7 @@ PRIORS = {
     "candor grading": 1.00,
     "gets no X at all": 1.00,
     "vibe word": 0.78,
+    "read as": 0.78,
     "evidence framing": 0.50,
     "em-dash aside": 0.50,
     "ascribed intent": 0.50,

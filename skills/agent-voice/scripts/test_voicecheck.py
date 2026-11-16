@@ -34,7 +34,8 @@ class CandidateTests(unittest.TestCase):
             "Your keys never travel off the device.": "data motion",
             "A rate limit during the recheck read as \"outside the directories\".": "read as",
             "A timeout was read as a denial.": "read as",
-            "The density reads as heavy.": "vibe word",
+            "The density reads as heavy.": "read as",
+            "The pattern is read as a bug by most reviewers.": "read as",
         }
         for sentence, expected in cases.items():
             with self.subTest(sentence=sentence):

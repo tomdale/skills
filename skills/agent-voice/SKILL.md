@@ -52,7 +52,7 @@ are acceptable when their meaning is clear.
 | "carries" for data, fields, payloads | holds, has, contains, shows |
 | "names" for a field, header, variable | says, shows, gives, calls it |
 | "X becomes Y" for rendering | the renderer draws X as Y |
-| "X read as Y" for a program's verdict | the check treated X as Y, the parser classified X as Y |
+| "X read as Y" (any tense, any subject) | who took X for Y and what they did: the check treated X as Y, the reviewer took X for Y; or what X did |
 | "leverages", "utilises" | uses |
 | "gated on" a check, a review, a flag | the condition it waits for, the person who decides |
 | "X survives" for a fact that still holds | what the code, test or command does |
@@ -123,9 +123,11 @@ A long noun phrase wedged between two em dashes often hides the fact the reader
 needs. Where the aside could stand as its own sentence and holds the point, split
 it out.
 
-"reads as", "feels", "actually" and "genuinely" substitute an impression for a
-measurement, and "it reads as deliberate" tells the reader how to feel about a
-number they were not given. Where an observable exists, give it; explaining why
+"read as" (in any tense), "feels", "actually" and "genuinely" substitute an
+impression or a verdict for a measurement, and "it reads as deliberate" tells the
+reader how to feel about a number they were not given. When a program did the
+reading ("a rate limit read as 'outside the directories'"), name it: "the
+recheck treated a rate limit as outside the directories". Where an observable exists, give it; explaining why
 a pattern grates sometimes needs the impression.
 
 - Wrong: `Keep the cap at two cards; it reads as deliberate rather than laggy.`
@@ -262,6 +264,6 @@ in several passes than in one rewrite.
 The standard's phrase list includes `rather than`, `instead of`, `X, not Y`,
 `carry`, unusual `name` verbs, a component `owns`, `stay`, `remain`, `retain`,
 `gate`, `gated`, `survives`, draft bylines, middle dots, `says so`, passive
-constructions, `read as` for a program's verdict, `actually`, `evidence`,
+constructions, `read as`, `actually`, `evidence`,
 `observed`, `finding`, `inferred`, `certainty`, `honest`, `candid`, `frank`, and
 `transparent`.
