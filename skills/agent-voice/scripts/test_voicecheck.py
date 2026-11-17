@@ -39,6 +39,9 @@ class CandidateTests(unittest.TestCase):
             "With Agent Automations, the pane gains Overview and Settings.": "gains",
             "The sidebar gained a search box in this release.": "gains",
             "The pane will gain a toolbar.": "gains",
+            "Two things I'd like from you:": "count lead-in",
+            "A few notes on the rollout:": "count lead-in",
+            "Three tests fail:": "count lead-in",
         }
         for sentence, expected in cases.items():
             with self.subTest(sentence=sentence):

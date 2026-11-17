@@ -188,6 +188,27 @@ to use them" and "this section describes" spend words telling the reader about
 the page they are already looking at. Describe structure where a person could
 not find a part without help.
 
+A count in front of a list ("Two things I'd like from you:", "A few notes:")
+tells the reader how many items follow. That earns its words only where the
+reader cannot see the number for themselves. Keep the count when:
+
+- the count is the fact: "Three tests fail:" before the test list;
+- the items are paragraphs, or sit far enough apart that the reader cannot see
+  where the last one ends;
+- the reader has to answer or do every item, and the count lets them check that
+  none was missed;
+- later text points at an item by position ("the second option").
+
+Drop the count in every other case. A bullet or numbered list shows its own
+length, and a container word ("things", "points", "notes", "items", "asks")
+says nothing about what the items are. Open with the first item, or state a
+fact about them: "Three tests fail:". A count that disagrees with the items is
+worse than none. Two bullets that hold four questions leave the reader unsure
+how many questions to answer.
+
+- Wrong: `Two things I'd like from you:` over two bullets, the second holding three questions.
+- Right: `Which option do you prefer? I'd also like to know why previews share the production database and credentials, and whether anyone still deploys previews against production data.`
+
 A status, date, author, owner, or version line about the draft itself appears
 when a person asks for it. Write items as prose instead of joining them with
 middle dots.
@@ -268,5 +289,5 @@ The standard's phrase list includes `rather than`, `instead of`, `X, not Y`,
 `carry`, unusual `name` verbs, a component `owns`, `stay`, `remain`, `retain`,
 `gate`, `gated`, `survives`, draft bylines, middle dots, `says so`, passive
 constructions, `reads as`, `gains`, `actually`, `evidence`,
-`observed`, `finding`, `inferred`, `certainty`, `honest`, `candid`, `frank`, and
-`transparent`.
+`observed`, `finding`, `inferred`, `certainty`, `honest`, `candid`, `frank`,
+`transparent`, and count lead-ins that end in a colon ("Two things:").

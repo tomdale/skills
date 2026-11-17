@@ -74,6 +74,10 @@ PATTERNS: list[tuple[str, str, str]] = [
     ("absolute", "reader", r"\bthe only\s+\w+\s+that\b|\bthe most important\b|\bthe whole point\b|\bthe one (?:real|thing|row|question|place|part)\b"),
     ("document tour", "reader", r"\b(?:this page|this section|this document|the section below|listed below|at the top|as follows|the rest of this)\b"),
     ("importance opener", "shape", r"\b(?:it'?s worth noting|importantly|crucially|needless to say)\b"),
+    # A colon sentence that opens with a count or a vague quantifier and counts the
+    # items that follow ("Two things I'd like from you:"). The decision call keeps
+    # a count that is itself the fact ("Three tests fail:").
+    ("count lead-in", "reader", r"^(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+|a few|a couple(?: of)?|several|some|a handful of)\s+[^.!?:]{0,80}:$"),
     ("mid-dot chain", "reader", r"[·•]"),
     ("draft byline", "reader", r"(?m)^(?:status|draft|version|author|owner|last updated|date|revision)\s*:"),
 ]
@@ -130,7 +134,9 @@ DEVICES = (
     "times out', 'the packet is dropped') states the fact; "
     "14. gains for a change: it says a component 'gains' what a change added ('the pane gains Overview') "
     "where 'the pane has Overview' or 'the release adds Overview to the pane' says it; a person who gains "
-    "access or a skill, and 'gains in throughput', are clean."
+    "access or a skill, and 'gains in throughput', are clean; "
+    "15. count lead-in: a colon sentence that counts items it does not name ('Two things I'd like from you:'); "
+    "a count of named facts ('Three tests fail:', 'Two builds were skipped:') is clean."
 )
 
 # The count example appears twice on purpose: with it stated once, the decision
@@ -179,7 +185,7 @@ CRITERIA = {
     "subject": "device 3, 7, 8, 9, 10, 13 or 14: intent on appearance, an abstract verb, a component made the actor of a task, state in place of behaviour, a missing actor the reader needs, data moving with no named sender, or a component that gains what a change added",
     "writer": "device 4: the writer's own certainty, candor or reading standing in the subject position",
     "claim": "device 1, 11 or 12: a preemptive contrast, a formulaic affirmative and negative join, 'gate' jargon, or a verdict announced before a colon",
-    "reader": "device 5 or 6: unearned uniqueness, talk about the document, unrequested draft metadata, or items joined with middle dots",
+    "reader": "device 5, 6 or 15: unearned uniqueness, talk about the document, unrequested draft metadata, items joined with middle dots, or a count of unnamed items before a list",
     "shape": "device 2: the sentence is padding because minimising words state nothing",
     "none": "none of these; the sentence states a fact about the work plainly, even when it uses one of the example words",
 }

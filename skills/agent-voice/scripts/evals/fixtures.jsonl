@@ -49,3 +49,8 @@
 {"sentence": "With Agent Automations, the pane has Overview and Agent \u2192 Settings.", "flag": 0, "why": "states what is there"}
 {"sentence": "The release adds a search box and a filter menu to the sidebar.", "flag": 0, "why": "named actor"}
 {"sentence": "Users gain access to a project by signing in with a team key.", "flag": 0, "why": "person acquires access"}
+{"sentence": "Two things I'd like from you:", "flag": 1, "why": "count of unnamed items"}
+{"sentence": "A few notes before I start:", "flag": 1, "why": "count of unnamed items"}
+{"sentence": "Several points on the rollout:", "flag": 1, "why": "count of unnamed items"}
+{"sentence": "Three tests fail:", "flag": 0, "why": "count is the fact"}
+{"sentence": "Two builds were skipped:", "flag": 0, "why": "count is the fact"}
