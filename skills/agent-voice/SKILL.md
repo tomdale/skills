@@ -53,6 +53,7 @@ are acceptable when their meaning is clear.
 | "names" for a field, header, variable | says, shows, gives, calls it |
 | "X becomes Y" for rendering | the renderer draws X as Y |
 | "X reads as Y" (any tense, any subject) | who took X for Y and what they did: the check treated X as Y, the reviewer took X for Y; or what X did |
+| "X gains Y" for what a change added | the release adds Y to X; X has Y; X now shows Y |
 | "leverages", "utilises" | uses |
 | "gated on" a check, a review, a flag | the condition it waits for, the person who decides |
 | "X survives" for a fact that still holds | what the code, test or command does |
@@ -65,6 +66,8 @@ are acceptable when their meaning is clear.
 - Right: `Today the text prints "Evidence: observed" for the field that holds the certainty.`
 - Wrong: `A supporting group becomes one panel with its children as rows inside it.`
 - Right: `The renderer draws a supporting group as one panel, its children as rows.`
+- Wrong: `With Agent Automations, the pane gains Overview and Agent → Settings.`
+- Right: `Agent Automations adds Overview and Agent → Settings to the pane.`
 - Wrong: `The launch is gated on approval.`
 - Right: `A person approves the launch before it starts.`
 - Wrong: `A GitHub rate limit or 5xx during the approval-time recheck read as "outside the directories".`
@@ -264,6 +267,6 @@ in several passes than in one rewrite.
 The standard's phrase list includes `rather than`, `instead of`, `X, not Y`,
 `carry`, unusual `name` verbs, a component `owns`, `stay`, `remain`, `retain`,
 `gate`, `gated`, `survives`, draft bylines, middle dots, `says so`, passive
-constructions, `reads as`, `actually`, `evidence`,
+constructions, `reads as`, `gains`, `actually`, `evidence`,
 `observed`, `finding`, `inferred`, `certainty`, `honest`, `candid`, `frank`, and
 `transparent`.

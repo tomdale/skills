@@ -36,6 +36,9 @@ class CandidateTests(unittest.TestCase):
             "A timeout was read as a denial.": "reads as",
             "The density reads as heavy.": "reads as",
             "The pattern is read as a bug by most reviewers.": "reads as",
+            "With Agent Automations, the pane gains Overview and Settings.": "gains",
+            "The sidebar gained a search box in this release.": "gains",
+            "The pane will gain a toolbar.": "gains",
         }
         for sentence, expected in cases.items():
             with self.subTest(sentence=sentence):

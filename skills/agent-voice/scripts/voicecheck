@@ -58,6 +58,9 @@ PATTERNS: list[tuple[str, str, str]] = [
     # "X reads as Y" in any tense: the sentence gives a reading or a verdict and
     # leaves out who or what did the reading.
     ("reads as", "subject", r"\breads?\s+as\b"),
+    # "X gains Y" for what a change added: the sentence gives X the new part and
+    # leaves out the change and its author. Bare "gain" counts only after a modal or "to".
+    ("gains", "subject", r"\b(?:gains|gained|gaining)\b|\b(?:will|would|can|could|should|may|might|must|to)\s+gain\b"),
     ("abstract verb", "subject", r"\b(?:becomes|leverages|utilises|utilizes)\s+(?:a|an|the|one|its)\b"),
     ("data motion", "subject", r"\b(?:leaves?|leaving|left)\s+(?:the|your|this|its)\s+(?:machine|device|computer|laptop|network|browser|host|process)\b|\b(?:travels?|travell?ed|travell?ing|flows?|flowed|flowing)\b|\bmakes?\s+(?:its|their)\s+way\b|\b(?:ends?|ended)\s+up\s+(?:in|on|at)\b"),
     ("gating word", "subject", r"\bgat(?:e|es|ed|ing)\b"),
@@ -124,7 +127,10 @@ DEVICES = (
     "the program that moves it ('the excerpts leave the machine through the gateway', 'your keys never "
     "travel off the device', 'the payload makes its way to the server'); a sentence whose subject is the "
     "program doing the work ('voicecheck sends the excerpts to the gateway', 'the renderer prints a row') or a protocol term the reader uses ('the request "
-    "times out', 'the packet is dropped') states the fact."
+    "times out', 'the packet is dropped') states the fact; "
+    "14. gains for a change: it says a component 'gains' what a change added ('the pane gains Overview') "
+    "where 'the pane has Overview' or 'the release adds Overview to the pane' says it; a person who gains "
+    "access or a skill, and 'gains in throughput', are clean."
 )
 
 # The count example appears twice on purpose: with it stated once, the decision
@@ -170,7 +176,7 @@ FIXES = {
 }
 
 CRITERIA = {
-    "subject": "device 3, 7, 8, 9, 10 or 13: intent on appearance, an abstract verb, a component made the actor of a task, state in place of behaviour, a missing actor the reader needs, or data moving with no named sender",
+    "subject": "device 3, 7, 8, 9, 10, 13 or 14: intent on appearance, an abstract verb, a component made the actor of a task, state in place of behaviour, a missing actor the reader needs, data moving with no named sender, or a component that gains what a change added",
     "writer": "device 4: the writer's own certainty, candor or reading standing in the subject position",
     "claim": "device 1, 11 or 12: a preemptive contrast, a formulaic affirmative and negative join, 'gate' jargon, or a verdict announced before a colon",
     "reader": "device 5 or 6: unearned uniqueness, talk about the document, unrequested draft metadata, or items joined with middle dots",

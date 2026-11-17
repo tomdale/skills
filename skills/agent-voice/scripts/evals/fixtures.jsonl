@@ -44,3 +44,8 @@
 {"sentence": "A 503 from the license server during startup read as an expired key.", "flag": 1, "why": "reads as"}
 {"sentence": "The loader treated a 503 from the license server during startup as an expired key.", "flag": 0, "why": "named actor"}
 {"sentence": "The new settings page reads as cluttered next to the old one.", "flag": 1, "why": "reads as"}
+{"sentence": "With Agent Automations, the pane gains Overview and Agent \u2192 Settings.", "flag": 1, "why": "gains for a change"}
+{"sentence": "The sidebar gained a search box and a filter menu in this release.", "flag": 1, "why": "gains for a change"}
+{"sentence": "With Agent Automations, the pane has Overview and Agent \u2192 Settings.", "flag": 0, "why": "states what is there"}
+{"sentence": "The release adds a search box and a filter menu to the sidebar.", "flag": 0, "why": "named actor"}
+{"sentence": "Users gain access to a project by signing in with a team key.", "flag": 0, "why": "person acquires access"}
