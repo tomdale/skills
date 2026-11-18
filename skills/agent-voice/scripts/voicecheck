@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Catch the turns of phrase the agent-voice standard forbids.
+"""Check prose against the agent-voice standard.
 
-A phrase pass selects candidate sentences. An AI Gateway decision model checks
-each candidate against the voice standard using its Markdown context. A finding
-requires at least the threshold probability of a problem. Without a model key,
-the phrase pass reports candidates for the reader to judge.
+Every sentence in the input goes to an AI Gateway decision model with its
+Markdown context. The model gives each sentence a probability that it breaks the
+standard and, when it does, which of five problems it has. A finding needs at
+least the threshold probability. The report prints findings most confident
+first, with the line, the sentence and the fix, then how many sentences were
+scored.
 
 The five problems, from the `agent-voice` skill:
 
@@ -14,7 +16,8 @@ The five problems, from the `agent-voice` skill:
   reader   it asserts importance or tours the document
   shape    padding whose rhythm carries it
 
-Exit codes: 0 clean, 1 findings, 2 the check could not run.
+Exit codes: 0 no findings in every sentence, 1 findings, 2 the check could not
+run or could not score every sentence.
 """
 
 from __future__ import annotations
@@ -32,55 +35,8 @@ EVALUATE_URL = "https://ai-gateway.vercel.sh/v1/evaluate"
 DEFAULT_MODEL = "openai/gpt-6-luna-decisions"
 DEFAULT_THRESHOLD = 0.5
 DEFAULT_TOP = 10
-MAX_CANDIDATES = 24
+SENTENCES_PER_REQUEST = 24
 SAFETY_IDENTIFIER_ENV = "VOICECHECK_SAFETY_IDENTIFIER"
-
-# One row per phrase worth naming. `family` describes the problem the decision
-# call confirms; the regex can be generous because the decision call decides.
-PATTERNS: list[tuple[str, str, str]] = [
-    ("rather than", "claim", r"\brather than\b"),
-    ("instead of", "claim", r"\binstead of\b"),
-    ("not X but Y", "claim", r"\bnot\s+\w+[,;]?\s+but\b"),
-    ("X, not Y", "claim", r",\s+not\s+\w+"),
-    ("bold fragment", "claim", r"(?m)^\s*\*\*[^*\n]{3,80}[.:]"),
-    ("emphasis lead-in", "claim", r"(?m)(?:^|\s)(?:\*\*|__|\*|_)[^\n*_]{3,80}(?:\*\*|__|\*|_)\s*:"),
-    ("gets no X at all", "subject", r"\bgets?\s+(?:no|nothing)\b[^.!?\n]{0,60}\bat all\b"),
-    ("nothing but", "subject", r"\bnothing\s+but\b|\bnothing\s+(?:tying|marking|holding|linking)\b"),
-    ("minimizer", "subject", r"\b(?:just|simply|merely|little more than|nothing else)\b"),
-    ("carry", "subject", r"\b(?:carry|carries|carried|carrying)\b"),
-    ("name verb", "subject", r"\b(?:names|named|naming)\b|(?<!\A)\bname\b"),
-    # A possessive ("its own X", "BB's own") is not ownership language, so only the
-    # verb and a bare "own" ("own the plan") reach the decision call.
-    ("component ownership", "subject", r"\b(?:owns|owning)\b|(?<!-)\bowned\b|(?<!\bits )(?<!\btheir )(?<!\bour )(?<!\byour )(?<!\bhis )(?<!\bher )(?<!\bmy )(?<!'s )(?<!\u2019s )\bown\b"),
-    ("state phrasing", "subject", r"\b(?:stay|stays|stayed|staying|remain|remains|remained|remaining|retain|retains|retained|retaining)\b"),
-    ("says so", "reader", r"\b(?:say|says|said)\s+so\b"),
-    ("passive voice", "subject", r"\b(?:am|is|are|was|were|be|been|being)\s+(?:(?:not|[a-z]+ly)\s+)?(?:[a-z]+ed|built|brought|done|given|held|kept|known|made|read|sent|shown|written)\b"),
-    # "X reads as Y" in any tense: the sentence gives a reading or a verdict and
-    # leaves out who or what did the reading.
-    ("reads as", "subject", r"\breads?\s+as\b"),
-    # "X gains Y" for what a change added: the sentence gives X the new part and
-    # leaves out the change and its author. Bare "gain" counts only after a modal or "to".
-    ("gains", "subject", r"\b(?:gains|gained|gaining)\b|\b(?:will|would|can|could|should|may|might|must|to)\s+gain\b"),
-    ("abstract verb", "subject", r"\b(?:becomes|leverages|utilises|utilizes)\s+(?:a|an|the|one|its)\b"),
-    ("data motion", "subject", r"\b(?:leaves?|leaving|left)\s+(?:the|your|this|its)\s+(?:machine|device|computer|laptop|network|browser|host|process)\b|\b(?:travels?|travell?ed|travell?ing|flows?|flowed|flowing)\b|\bmakes?\s+(?:its|their)\s+way\b|\b(?:ends?|ended)\s+up\s+(?:in|on|at)\b"),
-    ("gating word", "subject", r"\bgat(?:e|es|ed|ing)\b"),
-    ("verdict verb", "subject", r"\b(?:survives?|survived|surviving|(?:still )?holds|(?:still )?stands)\b[^.!?\n]{0,60}:"),
-    ("ascribed intent", "subject", r"\b(?:deliberately|intentionally)\s+(?:quieter|louder|softer|brighter|darker|calmer|more|less)\b|\b(?:quieter|louder|softer|brighter|darker)\s+(?:on purpose|by design)\b"),
-    ("evidence framing", "writer", r"\b(?:evidence|findings?|observations?|observed|inferred|proves?|proven|certainty|corroborat\w+)\b"),
-    ("candor grading", "writer", r"\b(?:honest\w*|candid\w*|frankly|transparent\w*)\b"),
-    ("performed doubt", "writer", r"\b(?:somewhere in|hard to say|not 100% sure|cannot yet|can'?t yet|not sure exactly)\b"),
-    ("vibe word", "writer", r"\b(?:feels like|actually|genuinely)\b"),
-    ("em-dash aside", "writer", r"—[^—\n]{40,}—"),
-    ("absolute", "reader", r"\bthe only\s+\w+\s+that\b|\bthe most important\b|\bthe whole point\b|\bthe one (?:real|thing|row|question|place|part)\b"),
-    ("document tour", "reader", r"\b(?:this page|this section|this document|the section below|listed below|at the top|as follows|the rest of this)\b"),
-    ("importance opener", "shape", r"\b(?:it'?s worth noting|importantly|crucially|needless to say)\b"),
-    # A colon sentence that opens with a count or a vague quantifier and counts the
-    # items that follow ("Two things I'd like from you:"). The decision call keeps
-    # a count that is itself the fact ("Three tests fail:").
-    ("count lead-in", "reader", r"^(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+|a few|a couple(?: of)?|several|some|a handful of)\s+[^.!?:]{0,80}:$"),
-    ("mid-dot chain", "reader", r"[·•]"),
-    ("draft byline", "reader", r"(?m)^(?:status|draft|version|author|owner|last updated|date|revision)\s*:"),
-]
 
 DEVICES = (
     "1. contrast: it says what a thing is not, preempting a complaint nobody made ('a line rather than a list'); "
@@ -157,21 +113,6 @@ DECISION = (
 )
 
 STRICT = "Flag the target when the wording itself is the defect. " + DECISION
-
-# Phrase reliability from an earlier audit ranks model findings. Patterns without
-# an estimate use 0.5; the estimates are not calibrated model probabilities.
-PRIORS = {
-    "candor grading": 1.00,
-    "gets no X at all": 1.00,
-    "vibe word": 0.78,
-    "reads as": 0.78,
-    "evidence framing": 0.50,
-    "em-dash aside": 0.50,
-    "ascribed intent": 0.50,
-    "rather than": 0.35,
-    "minimizer": 0.25,
-    "instead of": 0.22,
-}
 
 FIXES = {
     "subject": "name what the thing does, then what happened to it",
@@ -266,14 +207,14 @@ def contextual_units(text: str):
             previous = list_intro = ""
             previous_was_list = False
             if paragraph:
-                yield start, paragraph, block, "", True
+                yield start, paragraph, ""
             continue
         is_list = bool(re.match(r"^\s*(?:[-*+]\s|\d+[.)]\s)", block))
         if is_list and not previous_was_list:
             list_intro = previous if previous.endswith(":") else ""
         elif not is_list:
             list_intro = ""
-        for position_in_block, piece in enumerate(sentences(block)):
+        for piece in sentences(block):
             position = paragraph.find(piece)
             offset = max(0, position - 400) if position >= 0 else 0
             excerpt = paragraph[offset : offset + 2000]
@@ -285,44 +226,17 @@ def contextual_units(text: str):
                     f"Paragraph: {excerpt}",
                 ) if part
             )
-            yield start, piece, block, context, position_in_block == 0
+            yield start, piece, context
         previous = paragraph
         previous_was_list = is_list
 
 
-def units(text: str):
-    """Yield (line, sentence) for prose only, one unit per sentence."""
-    for line, sentence, _, _, _ in contextual_units(text):
-        yield line, sentence
-
-
-def candidates(text: str, exhaustive: bool = False):
-    """Candidate sentences, and how many sentences were examined at all.
-
-    Nothing is excluded. A quoted label, a component name and a sentence the
-    document marks as a bad example all still reach the decision call. The reader
-    of the report decides what to keep.
-    """
-    found = []
-    examined = 0
-    for index, (line, sentence, block, context, first) in enumerate(contextual_units(text)):
-        examined += 1
-        hits = []
-        for name, _, pattern in PATTERNS:
-            block_pattern = name in ("bold fragment", "emphasis lead-in")
-            if block_pattern and not first:
-                continue
-            if re.search(pattern, block if block_pattern else sentence, re.IGNORECASE):
-                hits.append(name)
-        if not hits and not exhaustive:
-            continue
-        if exhaustive and not hits:
-            # A sentence without a phrase reaches the decision call on its own
-            # merits. This is how a construction with no keyword — a passive or
-            # actorless sentence — gets judged at all.
-            hits = ["no phrase"]
-        found.append({"offset": index, "line": line, "sentence": sentence, "matched": hits, "context": context})
-    return found, examined
+def units(text: str) -> list[dict]:
+    """Every sentence in the text, with the context the model sees for it."""
+    return [
+        {"offset": index, "line": line, "sentence": sentence, "context": context}
+        for index, (line, sentence, context) in enumerate(contextual_units(text))
+    ]
 
 
 def safety_identifier() -> str:
@@ -387,7 +301,7 @@ def ask(items, model: str, key: str, timeout: float):
     return answers, cost
 
 
-def report(findings, *, as_json, elapsed_ms, cost, checked, model, total):
+def report(findings, *, as_json, elapsed_ms, cost, sentences, scored, model, total):
     if as_json:
         print(
             json.dumps(
@@ -398,12 +312,12 @@ def report(findings, *, as_json, elapsed_ms, cost, checked, model, total):
                             "sentence": f["sentence"],
                             "problem": f["problem"],
                             "confidence": round(f["confidence"], 2),
-                            "matched": f["matched"],
-                            "fix": FIXES[f["problem"]],
+                            "fix": _fix(f["problem"]),
                         }
                         for f in findings
                     ],
-                    "checked": checked,
+                    "sentences": sentences,
+                    "scored": scored,
                     "model": model,
                     "costUsd": round(cost, 7),
                     "elapsedMs": elapsed_ms,
@@ -412,18 +326,26 @@ def report(findings, *, as_json, elapsed_ms, cost, checked, model, total):
             )
         )
         return
+    coverage = f"{sentences} sentences" if scored == sentences else f"{sentences} sentences, {scored} scored"
     if not findings:
-        print(f"voicecheck: clean ({checked} sentences, {elapsed_ms} ms, ${cost:.6f})")
+        if scored == sentences:
+            print(f"voicecheck: clean ({sentences} sentences scored, {elapsed_ms} ms, ${cost:.6f})")
+        else:
+            print(f"voicecheck: no findings in {coverage}")
+            print(f"  the model request failed, so {sentences - scored} sentences went unscored")
+            print(f"  {elapsed_ms} ms, ${cost:.6f}, model {model}")
         return
-    print(f"voicecheck: {total} finding(s) in {checked} sentences")
+    print(f"voicecheck: {total} finding(s) in {coverage}")
+    if scored < sentences:
+        print(f"  the model request failed, so {sentences - scored} sentences went unscored")
     if total > len(findings):
         print(f"  showing the top {len(findings)}")
-    print("  This is a first pass: expect roughly a third of these to be false alarms.\n")
+    print("  This is a first pass: most of these are false alarms on clean prose,")
+    print("  so read from the top and stop when they stop paying.\n")
     for f in findings:
         print(f'  line {f["line"]}  {f["problem"]} ({f["confidence"]:.2f})')
         print(f'    {f["sentence"]}')
-        print(f'    matched: {", ".join(f["matched"])}')
-        print(f'    fix: {FIXES[f["problem"]]}\n')
+        print(f'    fix: {_fix(f["problem"])}\n')
     print(f"  {elapsed_ms} ms, ${cost:.6f}, model {model}")
 
 
@@ -438,7 +360,7 @@ def selftest(model: str, key: str) -> int:
     with open(path, encoding="utf-8") as fixtures:
         cases = [json.loads(line) for line in fixtures if line.strip()]
     items = [
-        {"offset": i, "line": i + 1, "sentence": c["sentence"], "matched": [c["why"]]}
+        {"offset": i, "line": i + 1, "sentence": c["sentence"]}
         for i, c in enumerate(cases)
     ]
     started = time.monotonic()
@@ -469,31 +391,26 @@ def selftest(model: str, key: str) -> int:
 def main(argv: list[str]) -> int:
     args = [a for a in argv[1:]]
     as_json = "--json" in args
-    no_model = "--no-model" in args
     quiet = "--quiet" in args
     show_all = "--all" in args
-    exhaustive = "--exhaustive" in args
     threshold = DEFAULT_THRESHOLD
     top = DEFAULT_TOP
     model = DEFAULT_MODEL
-    limit = MAX_CANDIDATES
     paths = []
     skip_next = False
     for index, arg in enumerate(args):
         if skip_next:
             skip_next = False
             continue
-        if arg in ("--threshold", "--model", "--max-candidates", "--top"):
+        if arg in ("--threshold", "--model", "--top"):
             value = args[index + 1] if index + 1 < len(args) else ""
             skip_next = True
             if arg == "--threshold":
                 threshold = float(value)
             elif arg == "--model":
                 model = value
-            elif arg == "--top":
-                top = int(value)
             else:
-                limit = int(value)
+                top = int(value)
         elif arg.startswith("-") and arg != "-":
             continue
         else:
@@ -523,85 +440,84 @@ def main(argv: list[str]) -> int:
     else:
         if sys.stdin.isatty():
             print(__doc__.strip().splitlines()[0], file=sys.stderr)
-            print("usage: voicecheck [--json] [--no-model] [FILE ...]  (or pipe text in)", file=sys.stderr)
+            print("usage: voicecheck [--json] [--top N] [FILE ...]  (or pipe text in)", file=sys.stderr)
             return 2
         text = sys.stdin.read()
         source = "<stdin>"
 
-    found, examined = candidates(text, exhaustive)
+    todo = units(text)
+    sentences = len(todo)
     started = time.monotonic()
-    checked, cost, notes = examined, 0.0, []
+    cost = 0.0
     key = os.environ.get("AI_GATEWAY_API_KEY", "").strip()
+    if not key:
+        print("voicecheck: needs AI_GATEWAY_API_KEY", file=sys.stderr)
+        return 2
 
-    if found and not no_model and key:
-        answers: dict = {}
-        cost = 0.0
-        pending = found if exhaustive else found[:limit]
-        for start in range(0, len(pending), MAX_CANDIDATES):
-            chunk = pending[start : start + MAX_CANDIDATES]
-            try:
-                chunk_answers, chunk_cost = ask(chunk, model, key, timeout=60)
-            except (urllib.error.URLError, TimeoutError, ValueError) as error:
-                notes.append(f"model pass failed ({error}); phrase pass for unscored sentences")
-                break
-            for number in range(len(chunk)):
-                answers[f"g{start + number}"] = chunk_answers.get(f"g{number}", {})
-                answers[f"f{start + number}"] = chunk_answers.get(f"f{number}", {})
-            cost += chunk_cost
-        findings = []
-        unscored = []
-        for index, item in enumerate(pending):
-            answer = answers.get(f"g{index}") or {}
-            probabilities = answer.get("probabilities") or {}
-            score = probabilities.get("problem")
+    answered: dict[int, tuple[float, str]] = {}
+    failure = ""
+    for start in range(0, len(todo), SENTENCES_PER_REQUEST):
+        chunk = todo[start : start + SENTENCES_PER_REQUEST]
+        try:
+            chunk_answers, chunk_cost = ask(chunk, model, key, timeout=60)
+        except (urllib.error.URLError, TimeoutError, ValueError) as error:
+            failure = str(error)
+            break
+        cost += chunk_cost
+        for number in range(len(chunk)):
+            answer = chunk_answers.get(f"g{number}") or {}
+            score = (answer.get("probabilities") or {}).get("problem")
             if isinstance(score, bool) or not isinstance(score, (int, float)) or not 0 <= score <= 1:
-                unscored.append(item)
                 continue
-            if score < threshold:
-                continue
-            family = (answers.get(f"f{index}") or {}).get("choice") or "none"
-            if family not in FIXES:
-                family = _family_of(item["matched"][0])
-            prior = max((PRIORS.get(name, 0.5) for name in item["matched"]), default=0.5)
-            findings.append({**item, "problem": family, "confidence": score, "rank": score * prior})
-        findings.sort(key=lambda f: -f["rank"])
-        if unscored and not notes:
-            notes.append("model response omitted candidate scores; phrase pass for unscored sentences")
-        for item in unscored + ([] if exhaustive else found[limit:]):
-            findings.append({**item, "problem": _family_of(item["matched"][0]), "confidence": 0.0})
-    else:
-        if not no_model and not key:
-            notes.append("AI_GATEWAY_API_KEY is unset; phrase pass only")
-        findings = [
-            {**item, "problem": _family_of(item["matched"][0]), "confidence": 0.0} for item in found
-        ]
+            family = (chunk_answers.get(f"f{number}") or {}).get("choice") or "none"
+            answered[start + number] = (score, family)
+
+    findings = []
+    for index, item in enumerate(todo):
+        if index not in answered:
+            continue
+        score, family = answered[index]
+        if score < threshold:
+            continue
+        findings.append(
+            {**item, "problem": family if family in FIXES else "unclassified", "confidence": score}
+        )
+    findings.sort(key=lambda f: -f["confidence"])
+    scored = len(answered)
+    if failure:
+        print(f"voicecheck: model request failed after {scored} sentences ({failure})", file=sys.stderr)
 
     elapsed_ms = int((time.monotonic() - started) * 1000)
-    for note in notes:
-        print(f"voicecheck: {note}", file=sys.stderr)
-
     total = len(findings)
     hidden = 0
     if findings and not show_all and len(findings) > top:
         hidden = len(findings) - top
         findings = findings[:top]
 
+    complete = scored == sentences
     if quiet:
-        return 1 if findings else 0
-    report(findings, as_json=as_json, elapsed_ms=elapsed_ms, cost=cost, checked=checked, model=model, total=total)
+        return 1 if findings else (0 if complete else 2)
+    report(
+        findings,
+        as_json=as_json,
+        elapsed_ms=elapsed_ms,
+        cost=cost,
+        sentences=sentences,
+        scored=scored,
+        model=model,
+        total=total,
+    )
     if not as_json:
         if hidden:
             print(f"  {hidden} more above the threshold; pass --all to list them")
         if findings:
             print(f"  in {source}")
-    return 1 if findings else 0
+    return 1 if findings else (0 if complete else 2)
 
 
-def _family_of(name: str) -> str:
-    for pattern_name, family, _ in PATTERNS:
-        if pattern_name == name:
-            return family
-    return "shape"
+def _fix(problem: str) -> str:
+    """The fix line for a problem family, or the general one when the model named none."""
+    return FIXES.get(problem, "read the sentence against the standard and say what happened")
 
 
 if __name__ == "__main__":

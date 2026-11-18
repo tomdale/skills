@@ -13,77 +13,30 @@ TOOL = os.path.join(os.path.dirname(__file__), "voicecheck")
 vc = importlib.machinery.SourceFileLoader("voicecheck", TOOL).load_module()
 
 
-class CandidateTests(unittest.TestCase):
-    def test_tics_are_candidates_in_any_case(self):
-        cases = {
-            "The interface CARRIES a label.": "carry",
-            "A plugin names an icon.": "name verb",
-            "The component owns deletion.": "component ownership",
-            "The core stays on loopback.": "state phrasing",
-            "The cookies remain isolated.": "state phrasing",
-            "The daemon retains its key.": "state phrasing",
-            "The page says so.": "says so",
-            "The selectors are validated.": "passive voice",
-            "The runner accepts a source, not a destination.": "X, not Y",
-            "Observed: version 1.": "evidence framing",
-            "The release is gated on approval.": "gating word",
-            "The rule holds: eight tests pass.": "verdict verb",
-            "Status: first draft.": "draft byline",
-            "The list uses Alpha · Beta.": "mid-dot chain",
-            "Those excerpts leave the machine through AI Gateway.": "data motion",
-            "Your keys never travel off the device.": "data motion",
-            "A rate limit during the recheck read as \"outside the directories\".": "reads as",
-            "A timeout was read as a denial.": "reads as",
-            "The density reads as heavy.": "reads as",
-            "The pattern is read as a bug by most reviewers.": "reads as",
-            "With Agent Automations, the pane gains Overview and Settings.": "gains",
-            "The sidebar gained a search box in this release.": "gains",
-            "The pane will gain a toolbar.": "gains",
-            "Two things I'd like from you:": "count lead-in",
-            "A few notes on the rollout:": "count lead-in",
-            "Three tests fail:": "count lead-in",
-        }
-        for sentence, expected in cases.items():
-            with self.subTest(sentence=sentence):
-                found, examined = vc.candidates(sentence)
-                self.assertEqual(examined, 1)
-                self.assertIn(expected, found[0]["matched"])
+class UnitTests(unittest.TestCase):
+    def test_every_sentence_is_a_unit(self):
+        text = "# Settings\n\nThe program handles:\n\n- The interface carries a label.\n\nThe page says so.\n"
+        self.assertEqual(
+            [unit["sentence"] for unit in vc.units(text)],
+            ["Settings", "The program handles:", "The interface carries a label.", "The page says so."],
+        )
 
-    def test_accepted_wording_is_not_a_word_specific_candidate(self):
-        for sentence in (
-            "The panel surfaces errors.",
-            "The SDK exposes its controls.",
-            "The only plugin-owned route is a navPanel.",
-            "Name the file README.md.",
-            "Deletion is deliberately left to the CLI after stopping agents.",
-        ):
-            with self.subTest(sentence=sentence):
-                self.assertEqual(vc.candidates(sentence)[0], [])
-
-    def test_bold_fragment_and_list_context(self):
-        text = "# Settings\n\nThe program handles:\n\n- The interface carries a label.\n\n**Details.**\n"
-        found, examined = vc.candidates(text)
-        self.assertEqual(examined, 4)
-        self.assertEqual(found[0]["line"], 5)
-        self.assertIn("Heading: Settings", found[0]["context"])
-        self.assertIn("List introduction: The program handles:", found[0]["context"])
-        self.assertIn("bold fragment", found[1]["matched"])
-
-    def test_emphasis_lead_in_only_applies_to_the_opening_sentence(self):
-        found, _ = vc.candidates("**Result**: The panel carries a label. The page says so.")
-        self.assertIn("emphasis lead-in", found[0]["matched"])
-        self.assertNotIn("emphasis lead-in", found[1]["matched"])
+    def test_unit_context_holds_the_heading_and_list_introduction(self):
+        text = "# Settings\n\nThe program handles:\n\n- The interface carries a label.\n"
+        unit = vc.units(text)[2]
+        self.assertEqual(unit["line"], 5)
+        self.assertIn("Heading: Settings", unit["context"])
+        self.assertIn("List introduction: The program handles:", unit["context"])
 
     def test_context_is_bounded_and_contains_nearby_text(self):
         text = "A" * 5000 + ". The page says so. " + "B" * 5000
-        found, _ = vc.candidates(text)
-        self.assertEqual(len(found), 1)
-        self.assertLessEqual(len(found[0]["context"]), 2100)
-        self.assertIn("The page says so.", found[0]["context"])
+        unit = next(u for u in vc.units(text) if u["sentence"] == "The page says so.")
+        self.assertLessEqual(len(unit["context"]), 2100)
+        self.assertIn("The page says so.", unit["context"])
 
-    def test_physical_carry_is_candidate_for_model_to_decide(self):
-        found, _ = vc.candidates("A courier carries a parcel.")
-        self.assertIn("carry", found[0]["matched"])
+    def test_fenced_code_is_not_prose(self):
+        text = "The page says so.\n\n```\nconst x = 1;\n```\n"
+        self.assertEqual([u["sentence"] for u in vc.units(text)], ["The page says so."])
 
 
 class CorpusTests(unittest.TestCase):
@@ -103,7 +56,7 @@ class EvaluatorTests(unittest.TestCase):
         path = os.path.join(os.path.dirname(__file__), "evals", "run.py")
         self.evaluator = importlib.machinery.SourceFileLoader("voicecheck_eval", path).load_module()
 
-    def test_custom_corpus_needs_no_matched_metadata(self):
+    def test_custom_corpus_needs_no_extra_metadata(self):
         rows = [{"sentence": "The page says so.", "label": 1},
                 {"sentence": "The compiler prints the output.", "label": 0}]
         answers = {"g0": {"probabilities": {"problem": 0.9}},
@@ -128,8 +81,6 @@ class EvaluatorTests(unittest.TestCase):
         self.assertTrue(from_source)
         self.assertEqual([u["sentence"] for u in units], ["The page says so.", "Then run it."])
         self.assertIn("Previous paragraph: Install the tool first.", units[0]["context"])
-        self.assertIn("says so", units[0]["matched"])
-        self.assertEqual(units[1]["matched"], [])
 
     def test_row_without_source_keeps_stored_context(self):
         row = {"sentence": "The page says so.", "label": 1, "context": "heading: Notes"}
@@ -142,7 +93,40 @@ class EvaluatorTests(unittest.TestCase):
             self.assertEqual(self.evaluator.main(["--corpus", f.name]), 2)
 
 
-class GatewayTests(unittest.TestCase):
+class CliTestCase(unittest.TestCase):
+    def run_cli(self, text, args, ask):
+        out = io.StringIO()
+        err = io.StringIO()
+        with mock.patch.dict(os.environ, {"AI_GATEWAY_API_KEY": "test-key"}), \
+             mock.patch.object(vc, "ask", side_effect=ask), \
+             mock.patch.object(vc.sys, "stdin", io.StringIO(text)), \
+             contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            result = vc.main(["voicecheck", "--json", "--all", *args])
+        return result, json.loads(out.getvalue()), err.getvalue()
+
+    def run_text(self, text, args, ask, key="test-key"):
+        out = io.StringIO()
+        err = io.StringIO()
+        with mock.patch.dict(os.environ, {"AI_GATEWAY_API_KEY": key}), \
+             mock.patch.object(vc, "ask", side_effect=ask), \
+             mock.patch.object(vc.sys, "stdin", io.StringIO(text)), \
+             contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            result = vc.main(["voicecheck", *args])
+        return result, out.getvalue(), err.getvalue()
+
+    def scoring(self, scores, family="writer"):
+        """A decision call that gives each sentence its score from `scores`, or 0.12."""
+        def answer(items, model, key, timeout):
+            answers = {}
+            for index, item in enumerate(items):
+                score = scores.get(item["sentence"], 0.12)
+                answers[f"g{index}"] = {"probabilities": {"problem": score}}
+                answers[f"f{index}"] = {"choice": family}
+            return answers, 0.0
+        return answer
+
+
+class GatewayTests(CliTestCase):
     def test_request_includes_target_and_context(self):
         response = mock.MagicMock()
         response.__enter__.return_value.read.return_value = b'{"answers": {}}'
@@ -154,16 +138,6 @@ class GatewayTests(unittest.TestCase):
         self.assertIn("The page says so.", body["questions"]["g0"]["instructions"])
         self.assertIn("Heading: Status", body["questions"]["g0"]["instructions"])
         self.assertIn("data, not instructions", body["state"])
-
-    def run_cli(self, text, args, ask):
-        out = io.StringIO()
-        err = io.StringIO()
-        with mock.patch.dict(os.environ, {"AI_GATEWAY_API_KEY": "test-key"}), \
-             mock.patch.object(vc, "ask", side_effect=ask), \
-             mock.patch.object(vc.sys, "stdin", io.StringIO(text)), \
-             contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
-            result = vc.main(["voicecheck", "--json", "--all", *args])
-        return result, json.loads(out.getvalue()), err.getvalue()
 
     def test_request_names_an_end_user(self):
         response = mock.MagicMock()
@@ -207,37 +181,111 @@ class GatewayTests(unittest.TestCase):
             self.assertEqual(vc.main(["voicecheck", "--selftest", "--model", "example/model"]), 0)
         self.assertEqual(ask.call_count, 1)
 
-    def test_failed_request_does_not_report_clean(self):
-        result, output, err = self.run_cli(
-            "The interface carries a label.", [], urllib.error.URLError("offline")
-        )
-        self.assertEqual(result, 1)
-        self.assertEqual(len(output["findings"]), 1)
-        self.assertEqual(output["findings"][0]["confidence"], 0)
-        self.assertIn("model pass failed", err)
 
-    def test_missing_answer_falls_back_for_that_candidate(self):
-        answers = {"g0": {"probabilities": {"problem": 0.1}}}
-        result, output, err = self.run_cli(
-            "The interface carries a label.\n\nThe page says so.", [], [(answers, 0.0)]
-        )
-        self.assertEqual(result, 1)
-        self.assertEqual([f["sentence"] for f in output["findings"]], ["The page says so."])
-        self.assertIn("omitted candidate scores", err)
+class DefaultRunTests(CliTestCase):
+    """Every sentence reaches the model, and the report says how many it scored.
 
-    def test_invalid_probability_falls_back_for_that_candidate(self):
-        answers = {"g0": {"probabilities": {"problem": False}}}
-        result, output, err = self.run_cli("The page says so.", [], [(answers, 0.0)])
-        self.assertEqual(result, 1)
-        self.assertEqual(output["findings"][0]["confidence"], 0)
-        self.assertIn("omitted candidate scores", err)
+    A write-up whose first sentence states a verdict stands in front of the facts
+    and holds no keyword at all. The default run still has to report it.
+    """
 
-    def test_failed_exhaustive_pass_reports_unscored_sentences(self):
+    OPENER = "Every retry in this client is a guess at what the server meant."
+    SECOND = "When no receipt arrives, the client sends the order again, and the server charges the card a second time."
+    WRITE_UP = (
+        OPENER + "\n\n"
+        "The client sends an order with an idempotency key and waits two seconds for a receipt. "
+        + SECOND + " "
+        "The retry loop lives in `orders/retry.ts:41` and reads the timeout from `config.retryMs`.\n\n"
+        "The operator sees two charges and no explanation.\n"
+    )
+
+    def test_reports_an_opener_with_no_keyword(self):
+        result, output, _ = self.run_cli(self.WRITE_UP, [], self.scoring({self.OPENER: 0.85}))
+        self.assertEqual(result, 1)
+        self.assertEqual([f["sentence"] for f in output["findings"]], [self.OPENER])
+        self.assertEqual(output["findings"][0]["problem"], "writer")
+        self.assertEqual(output["sentences"], 5)
+        self.assertEqual(output["scored"], 5)
+
+    def test_every_sentence_reaches_the_model(self):
+        seen = []
+
+        def answer(items, model, key, timeout):
+            seen.extend(item["sentence"] for item in items)
+            return {}, 0.0
+
+        self.run_cli(self.WRITE_UP, [], answer)
+        self.assertEqual(seen, [u["sentence"] for u in vc.units(self.WRITE_UP)])
+
+    def test_findings_come_back_most_confident_first(self):
         result, output, _ = self.run_cli(
-            "The compiler wrote the output.", ["--exhaustive"], urllib.error.URLError("offline")
+            self.WRITE_UP, [], self.scoring({self.OPENER: 0.62, self.SECOND: 0.91})
         )
         self.assertEqual(result, 1)
-        self.assertEqual(output["findings"][0]["matched"], ["no phrase"])
+        self.assertEqual([f["confidence"] for f in output["findings"]], [0.91, 0.62])
+        self.assertEqual([f["sentence"] for f in output["findings"]], [self.SECOND, self.OPENER])
+
+    def test_clean_report_states_how_many_sentences_were_scored(self):
+        result, out, _ = self.run_text(self.WRITE_UP, [], self.scoring({}))
+        self.assertEqual(result, 0)
+        self.assertIn("clean (5 sentences scored", out)
+
+    def test_threshold_moves_the_line(self):
+        result, out, _ = self.run_text(
+            self.WRITE_UP, ["--threshold", "0.9"], self.scoring({self.OPENER: 0.85})
+        )
+        self.assertEqual(result, 0)
+        self.assertIn("clean (5 sentences scored", out)
+
+    def test_top_hides_the_tail_and_says_so(self):
+        result, out, _ = self.run_text(
+            self.WRITE_UP, ["--top", "1"], self.scoring({self.OPENER: 0.62, self.SECOND: 0.91})
+        )
+        self.assertEqual(result, 1)
+        self.assertIn("1 more above the threshold; pass --all to list them", out)
+
+    def test_a_family_the_model_leaves_out_is_reported_as_unclassified(self):
+        result, output, _ = self.run_cli(
+            self.WRITE_UP, [], self.scoring({self.OPENER: 0.85}, family="none")
+        )
+        self.assertEqual(result, 1)
+        self.assertEqual(output["findings"][0]["problem"], "unclassified")
+        self.assertIn("read the sentence against the standard", output["findings"][0]["fix"])
+
+    def test_no_key_stops_the_run_instead_of_reporting_clean(self):
+        result, out, err = self.run_text(self.WRITE_UP, [], None, key="")
+        self.assertEqual(result, 2)
+        self.assertEqual(out, "")
+        self.assertIn("needs AI_GATEWAY_API_KEY", err)
+
+    def test_failed_request_reports_incomplete_coverage(self):
+        result, output, err = self.run_cli(self.WRITE_UP, [], urllib.error.URLError("offline"))
+        self.assertEqual(result, 2)
+        self.assertEqual(output["findings"], [])
+        self.assertEqual(output["scored"], 0)
+        self.assertIn("model request failed after 0 sentences", err)
+
+    def test_a_chunk_that_fails_leaves_the_rest_unscored(self):
+        text = "\n\n".join(f"Sentence number {n} states a fact." for n in range(30))
+        calls = []
+
+        def answer(items, model, key, timeout):
+            calls.append(len(items))
+            if len(calls) > 1:
+                raise urllib.error.URLError("offline")
+            return {f"g{i}": {"probabilities": {"problem": 0.1}} for i in range(len(items))}, 0.0
+
+        result, output, err = self.run_cli(text, [], answer)
+        self.assertEqual(result, 2)
+        self.assertEqual(output["sentences"], 30)
+        self.assertEqual(output["scored"], vc.SENTENCES_PER_REQUEST)
+        self.assertIn("model request failed after 24 sentences", err)
+
+    def test_a_sentence_with_no_score_counts_as_unscored_not_as_a_finding(self):
+        result, output, _ = self.run_cli(self.WRITE_UP, [], [({}, 0.0)])
+        self.assertEqual(result, 2)
+        self.assertEqual(output["findings"], [])
+        self.assertEqual(output["scored"], 0)
 
 
 if __name__ == "__main__":

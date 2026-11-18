@@ -278,13 +278,13 @@ in several passes than in one rewrite.
    or artifact: a document, README, proposal, design doc, review write-up, PR
    description, commit message, skill or instruction text. Pipe text to
    `scripts/voicecheck -` when there is no file. A reply written inside a session
-   needs no check. By default, `voicecheck` searches for known phrases and asks a
-   small decision model about up to 24 candidate sentences. It reports the sentence,
-   the phrase that tripped it, and the problem to fix. Use `--json` for a script,
-   `--top N` for a shorter list, `--no-model` to see the phrases alone, and
-   `--exhaustive` to score every sentence. The phrase pass still runs when
-   `AI_GATEWAY_API_KEY` is unset. Expect false alarms; read ranked results from
-   the top and stop when they stop being useful.
+   needs no check. `voicecheck` sends every sentence to a small decision model
+   and reports the line, the sentence, the problem and a fix, most confident
+   first, then how many sentences it scored. A grep for phrases misses an opener
+   that states a verdict, so every sentence goes to the model. Use `--json` for a
+   script, `--top N` for a shorter list, and `--threshold` to move the cutoff. It
+   needs `AI_GATEWAY_API_KEY` and exits 2 without one. Expect false alarms; read
+   the findings from the top and stop when they stop being useful.
 2. Change a sentence only where the flagged word states nothing. "no frames were
    measured", "the stage has not started" and "this path runs only in tests"
    keep their words. Then read for what no checker sees: whether two sentences
@@ -296,9 +296,9 @@ in several passes than in one rewrite.
 4. The sentence that explains a rule pays the most in a document, and the
    statements below apply to every sentence whether or not a checker flags it.
 
-The standard's phrase list includes `rather than`, `instead of`, `X, not Y`,
-`carry`, unusual `name` verbs, a component `owns`, `stay`, `remain`, `retain`,
-`gate`, `gated`, `survives`, draft bylines, middle dots, `says so`, passive
-constructions, `reads as`, `gains`, `actually`, `evidence`,
-`observed`, `finding`, `inferred`, `certainty`, `honest`, `candid`, `frank`,
-`transparent`, and count lead-ins that end in a colon ("Two things:").
+The words and shapes this standard flags include `rather than`, `instead of`,
+`X, not Y`, `carry`, unusual `name` verbs, a component `owns`, `stay`, `remain`,
+`retain`, `gate`, `gated`, `survives`, draft bylines, middle dots, `says so`,
+passive constructions, `reads as`, `gains`, `actually`, `evidence`, `observed`,
+`finding`, `inferred`, `certainty`, `honest`, `candid`, `frank`, `transparent`,
+and count lead-ins that end in a colon ("Two things:").

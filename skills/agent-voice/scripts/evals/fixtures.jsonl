@@ -54,3 +54,9 @@
 {"sentence": "Several points on the rollout:", "flag": 1, "why": "count of unnamed items"}
 {"sentence": "Three tests fail:", "flag": 0, "why": "count is the fact"}
 {"sentence": "Two builds were skipped:", "flag": 0, "why": "count is the fact"}
+{"sentence": "Every retry in this client is a guess at what the server meant.", "flag": 1, "why": "verdict opener, no phrase"}
+{"sentence": "The empty report hides the work the command skipped.", "flag": 1, "why": "verdict opener, no phrase"}
+{"sentence": "A cache that never fills is the real cost of the new loader.", "flag": 1, "why": "verdict opener, no phrase"}
+{"sentence": "This release is the moment the parser stops guessing.", "flag": 1, "why": "verdict opener, no phrase"}
+{"sentence": "The command printed 3 findings and scored all 41 sentences.", "flag": 0, "why": "states what it did"}
+{"sentence": "The retry loop waits two seconds and then sends the order again.", "flag": 0, "why": "states what it does"}

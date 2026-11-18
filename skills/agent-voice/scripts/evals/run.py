@@ -4,8 +4,7 @@
 The development corpus holds single sentences sampled from public Markdown
 documents and labeled against the current SKILL.md. The sample is random within
 each document kind, so precision and recall do not estimate natural prevalence.
-The phrase pass selects candidates and the decision call scores them at or above
-the threshold.
+The decision call scores every sentence at or above the threshold.
 
 Each row's source URL pins a file at a commit. The evaluator downloads that file
 once into ~/.cache/voicecheck/corpus-sources and sends the model the sentences
@@ -88,23 +87,13 @@ def tool_units(row, documents):
     if text is not None:
         wanted = _norm(row["sentence"])
         units = [
-            {"sentence": sentence, "context": context, "matched": _matches(sentence, block, first)}
-            for _, sentence, block, context, first in vc.contextual_units(text)
-            if _norm(sentence) and _norm(sentence) in wanted and wanted[:60] in _norm(block)
+            {"sentence": unit["sentence"], "context": unit["context"]}
+            for unit in vc.units(text)
+            if _norm(unit["sentence"]) and _norm(unit["sentence"]) in wanted
         ]
         if units:
             return units, True
-    return [{"sentence": row["sentence"], "context": row.get("context", ""), "matched": _matches(row["sentence"], row["sentence"], True)}], False
-
-
-def _matches(sentence, block, first):
-    found, _ = vc.candidates(sentence)
-    hits = list(found[0]["matched"]) if found else []
-    if first:
-        for name, _, pattern in vc.PATTERNS:
-            if name in ("bold fragment", "emphasis lead-in") and re.search(pattern, block, re.IGNORECASE) and name not in hits:
-                hits.append(name)
-    return hits
+    return [{"sentence": row["sentence"], "context": row.get("context", "")}], False
 
 
 def score_corpus(rows, key, stored_context=False):
@@ -120,7 +109,7 @@ def score_corpus(rows, key, stored_context=False):
     for start in range(0, len(items), CHUNK):
         chunk = items[start : start + CHUNK]
         answers, _ = vc.ask(
-            [{"offset": i, "line": i + 1, "sentence": u["sentence"], "matched": ["corpus"], "context": u["context"]} for i, u in enumerate(chunk)],
+            [{"offset": i, "line": i + 1, "sentence": u["sentence"], "context": u["context"]} for i, u in enumerate(chunk)],
             vc.DEFAULT_MODEL, key, timeout=90,
         )
         for index in range(len(chunk)):
@@ -131,14 +120,11 @@ def score_corpus(rows, key, stored_context=False):
     for row, (units, from_source) in zip(rows, expanded):
         unit_scores = scores[position : position + len(units)]
         position += len(units)
-        # The row counts as reported when any of its sentences would be: a phrase
-        # match selected it and its decision score crosses the threshold.
-        reported = [s for u, s in zip(units, unit_scores) if u["matched"]]
-        best = max(reported or unit_scores, key=lambda s: s[0])
+        # Every sentence reaches the decision call, so a row scores as its most
+        # confident sentence.
+        best = max(unit_scores, key=lambda s: s[0])
         scored.append({
             **row,
-            "candidate": bool(reported),
-            "matched": sorted({m for u in units for m in u["matched"]}),
             "score": best[0],
             "family": best[1],
             "fromSource": from_source,
@@ -150,7 +136,7 @@ def confusion(scored, threshold):
     tp = fp = fn = tn = 0
     wrong = []
     for row in scored:
-        predicted = bool(row["candidate"]) and row["score"] >= threshold
+        predicted = row["score"] >= threshold
         actual = bool(row["label"])
         if predicted and actual:
             tp += 1
@@ -205,7 +191,6 @@ def main(argv):
     best = max(results, key=lambda r: (r["f1"], r["precision"]))["threshold"]
     positives = [r for r in scored if r["label"]]
     negatives = [r for r in scored if not r["label"]]
-    candidate_recall = sum(1 for r in positives if r["candidate"]) / len(positives) if positives else 0
     mean_pos = sum(r["score"] for r in positives) / len(positives) if positives else 0
     mean_neg = sum(r["score"] for r in negatives) / len(negatives) if negatives else 0
 
@@ -216,7 +201,6 @@ def main(argv):
             "sentences": len(scored),
             "positives": len(positives),
             "negatives": len(negatives),
-            "prefilterRecall": round(candidate_recall, 3),
             "meanScorePositives": round(mean_pos, 3),
             "meanScoreNegatives": round(mean_neg, 3),
             "elapsedMs": elapsed,
@@ -233,11 +217,9 @@ def main(argv):
         if not group:
             continue
         hits = sum(1 for r in group if r["label"])
-        reached = sum(1 for r in group if r["candidate"])
-        print(f"  {stratum:9} {len(group):3} sentences, {hits:2} violations ({hits/len(group):.1%}), "
-              f"{reached:2} reach the decision call ({reached/len(group):.0%})")
-    print(f"phrase pass reaches {candidate_recall:.0%} of the violations; decision mean score "
-          f"{mean_pos:.2f} on violations and {mean_neg:.2f} on clean ({elapsed} ms)\n")
+        print(f"  {stratum:9} {len(group):3} sentences, {hits:2} violations ({hits/len(group):.1%})")
+    print(f"decision mean score {mean_pos:.2f} on violations and {mean_neg:.2f} on clean "
+          f"({elapsed} ms)\n")
     print("A first pass wants recall, so read the curve at a low threshold and")
     print("check that the shortlist stays trustworthy as you go down it.\n")
     print(f"{'thr':>5} {'prec':>6} {'rec':>6} {'F1':>6} {'acc':>6}   tp fp fn tn")
@@ -254,10 +236,9 @@ def main(argv):
         print(f"  {stratum:9} tp {result['tp']:2} fp {result['fp']:2} fn {result['fn']:2} "
               f"| precision {result['precision']:.2f} recall {result['recall']:.2f}")
 
-    ranked = sorted((r for r in scored if r["candidate"] and r["score"] >= vc.DEFAULT_THRESHOLD), key=lambda r: -(r["score"] * max(
-        (vc.PRIORS.get(name, 0.5) for name in (r.get("matched") or ["none"])), default=0.5)))
+    ranked = sorted((r for r in scored if r["score"] >= vc.DEFAULT_THRESHOLD), key=lambda r: -r["score"])
     total_positives = sum(1 for r in scored if r["label"])
-    print(f"\nshortlist at {vc.DEFAULT_THRESHOLD}, ranked by score x phrase reliability:")
+    print(f"\nshortlist at {vc.DEFAULT_THRESHOLD}, most confident first:")
     for k in (5, 8, 12, 16):
         if k > len(ranked):
             break
@@ -270,7 +251,7 @@ def main(argv):
     if wrong:
         print(f"\nmistakes at {chosen['threshold']:.2f}:")
         for kind, row in wrong:
-            print(f"  {kind:14} score={row['score']:.2f} match={row['candidate']}  {row['sentence'][:120]}")
+            print(f"  {kind:14} score={row['score']:.2f}  {row['sentence'][:120]}")
     return 0
 
 
