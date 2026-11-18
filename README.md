@@ -17,6 +17,7 @@ My personal agent skills and lightweight workflow helpers. These are written for
 - [iterm2-python-api](skills/iterm2-python-api/SKILL.md) — Write and debug iTerm2 Python automation scripts for windows, tabs, sessions, and event handlers.
 - [lawyerify](skills/lawyerify/SKILL.md) — Generate a lawyer-oriented Word document overview of the current PR for legal or compliance review.
 - [minify-prompt](skills/minify-prompt/SKILL.md) — Compress agent memory and instruction files (CLAUDE.md, SKILL.md, system prompts) for maximum information density.
+- [naming-code](skills/naming-code/SKILL.md) — Name types, fields, tables, functions, config keys, flags, and labels by what they hold or do.
 - [narrative](skills/narrative/SKILL.md) — Turn the current branch's diff into narrative prose suitable for a PR description or comment.
 - [pr-feedback](skills/pr-feedback/SKILL.md) — Draft and post GitHub PR review feedback with user approval at each step.
 - [prototyping-ui-motion](skills/prototyping-ui-motion/SKILL.md) — Settle the target and constraints for an animation or interaction, then build a standalone mockup with variants for the user to pick before touching product code.

@@ -95,6 +95,17 @@ A field holding the wrong value is a defect worth naming exactly. A rendering
 choice described as a character flaw leaves the reader with a verdict and no
 behavior.
 
+Name a thing by what it contains or does. A name for the purpose you intend
+("trust score") or a metaphor ("blast radius") doesn't tell the reader what is
+inside. Name the contents ("builds passed in the last 20"). Use the reader's own
+words and the system's existing ones before coining one. Don't call something
+yours, approved, or verified unless the record shows who or what did it.
+
+- Wrong: `Each repo shows a trust score.`
+- Right: `Each repo shows how many of its last 20 builds passed.`
+- Wrong: `The audit table lists who reviewed each change.` (when the merge bot fills the column)
+- Right: `The audit table lists who merged each change.`
+
 ## Leave the writer out of the sentence
 
 Your confidence, your candor and your standing push the fact aside. Say what

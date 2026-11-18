@@ -15,6 +15,7 @@ This plugin currently bundles:
 - `iterm2-python-api`
 - `lawyerify`
 - `minify-prompt`
+- `naming-code`
 - `narrative`
 - `pr-feedback`
 - `prototyping-ui-motion`
